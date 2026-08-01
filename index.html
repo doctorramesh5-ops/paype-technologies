@@ -521,7 +521,7 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:48px 5%
 </section>
 <script>
 function payERPPlan(n,a){if(typeof Razorpay==='undefined'){var s=document.createElement('script');s.src='https://checkout.razorpay.com/v1/checkout.js';s.onload=function(){openERPRazorpay(n,a);};document.head.appendChild(s);}else{openERPRazorpay(n,a);}}
-function openERPRazorpay(n,a){new Razorpay({key:'rzp_live_Si0jGc1i23NVWo',amount:a*100,currency:'INR',name:'PayPe Technologies Pvt. Ltd.',description:'PayPe ERP - '+n+' Plan',handler:function(r){alert('Payment successful! ID: '+r.razorpay_payment_id+'\nWelcome to PayPe ERP '+n+'! Our team will contact you shortly.');window.open('https://erp.paype.co.in','_blank');},notes:{plan:'PayPe ERP '+n},theme:{color:'#00C2A8'}}).open();}
+function openERPRazorpay(n,a){new Razorpay({key:'rzp_live_Si0jGc1i23NVWo',amount:a*100,currency:'INR',name:'PayPe Technologies Pvt. Ltd.',description:'PayPe ERP - '+n+' Plan',handler:function(r){fetch('https://erpapi.paype.co.in/api/payments/razorpay-webhook',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({razorpay_payment_id:r.razorpay_payment_id,plan:n,amount:a*100,paymentType:'Monthly'})}).catch(function(){});alert('Payment successful! ID: '+r.razorpay_payment_id+'\nWelcome to PayPe ERP '+n+'! Our team will contact you shortly.');window.open('https://erp.paype.co.in','_blank');},notes:{plan:'PayPe ERP '+n},theme:{color:'#00C2A8'}}).open();}
 function contactERPSales(){
   var d=document.createElement('div');
   d.id='ent-modal';
