@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-app-compat.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-auth-compat.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-firestore-compat.min.js"></script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PayPe – Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root[data-theme="dark"]{--bg:#07070e;--bg2:#0d0d1a;--bg3:#12121e;--border:#1a1a2e;--text:#e2e2f0;--muted:#5a5a80;--gold:#f59e0b;--red:#ef4444;--green:#22c55e;--blue:#3b82f6;--purple:#8b5cf6;--shadow:0 4px 24px rgba(0,0,0,.5)}
+:root[data-theme="light"]{--bg:#f0f0f8;--bg2:#ffffff;--bg3:#e8e8f4;--border:#d0d0e8;--text:#1a1a2e;--muted:#6060a0;--gold:#d97706;--red:#dc2626;--green:#16a34a;--blue:#2563eb;--purple:#7c3aed;--shadow:0 4px 24px rgba(0,0,0,.08)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;transition:background .3s,color .3s}
+
+/* ── LOGIN SCREEN ── */
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:var(--bg);position:relative;overflow:hidden}
+#loginScreen::before{content:'';position:absolute;top:-100px;left:-100px;width:500px;height:500px;background:radial-gradient(rgba(239,68,68,.15),transparent 70%);pointer-events:none}
+#loginScreen::after{content:'';position:absolute;bottom:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(rgba(245,158,11,.1),transparent 70%);pointer-events:none}
+.admin-login-card{width:100%;max-width:400px;background:var(--bg2);border:1px solid var(--border);border-radius:22px;padding:36px;position:relative;z-index:1;box-shadow:var(--shadow);animation:slideUp .4s ease}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.admin-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:100px;padding:6px 14px;font-size:.75rem;color:var(--red);font-weight:700;margin-bottom:20px;letter-spacing:.5px}
+.admin-logo{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+.admin-logo .ai{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--red),#b91c1c);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:1.1rem;font-family:'Playfair Display',serif}
+.admin-logo .at{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900}
+.admin-logo .at span{color:var(--red)}
+.admin-login-card h2{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;margin-bottom:6px}
+.admin-login-card p{color:var(--muted);font-size:.85rem;margin-bottom:24px}
+.al-field{margin-bottom:14px}
+.al-field label{display:block;font-size:.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.al-field input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:.9rem;outline:none;transition:border .2s;font-family:'DM Sans',sans-serif}
+.al-field input:focus{border-color:rgba(239,68,68,.5)}
+.al-btn{width:100%;padding:13px;border-radius:11px;background:linear-gradient(135deg,var(--red),#b91c1c);color:#fff;font-weight:700;font-size:.92rem;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-top:4px}
+.al-btn:hover{opacity:.9;transform:translateY(-1px)}
+.al-error{color:var(--red);font-size:.8rem;margin-top:8px;text-align:center;min-height:16px}
+.customer-link{text-align:center;margin-top:16px;font-size:.8rem;color:var(--muted)}
+.customer-link a{color:var(--gold);cursor:pointer}
+
+/* ── ADMIN PANEL ── */
+#adminPanel{display:none}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:250px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;transition:transform .3s,background .3s}
+.sidebar-logo{display:flex;align-items:center;gap:10px;padding:20px;border-bottom:1px solid var(--border)}
+.sidebar-logo .ai{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--red),#b91c1c);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:.95rem;font-family:'Playfair Display',serif;flex-shrink:0}
+.sidebar-logo .at{font-family:'Playfair Display',serif;font-size:1rem;font-weight:900}
+.sidebar-logo .at span{color:var(--red)}
+.admin-badge-sm{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--red);font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:100px;margin-left:auto}
+.sidebar-nav{flex:1;padding:12px 10px;overflow-y:auto}
+.nav-label{font-size:.67rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;padding:0 10px;margin:16px 0 8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--muted);font-size:.86rem;font-weight:500;cursor:pointer;transition:all .2s;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.15)}
+.nav-item .ni{width:20px;text-align:center;font-size:.9rem;flex-shrink:0}
+.nb{margin-left:auto;background:var(--red);color:#fff;font-size:.63rem;font-weight:700;padding:2px 6px;border-radius:100px}
+
+/* SIDEBAR BOTTOM */
+.sidebar-bottom{padding:12px 10px;border-top:1px solid var(--border)}
+.admin-pill{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);margin-bottom:10px}
+.admin-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--red),#b91c1c);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:.85rem;flex-shrink:0}
+.admin-info .an{font-size:.82rem;font-weight:600}
+.admin-info .ar{font-size:.7rem;color:var(--red)}
+.theme-row{display:flex;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:8px}
+.theme-btn{flex:1;padding:6px 3px;border-radius:7px;border:none;cursor:pointer;background:transparent;color:var(--muted);font-size:.72rem;font-weight:600;transition:all .2s;font-family:'DM Sans',sans-serif}
+.theme-btn.active{background:linear-gradient(135deg,var(--red),#b91c1c);color:#fff}
+.theme-btn:hover:not(.active){background:var(--bg3);color:var(--text)}
+.logout-btn{width:100%;padding:9px;border-radius:10px;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.82rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+
+/* MAIN */
+.main{margin-left:250px;min-height:100vh}
+.topbar{height:60px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 26px;background:var(--bg2);position:sticky;top:0;z-index:50;transition:background .3s}
+.topbar-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:900}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.ib{width:34px;height:34px;border-radius:9px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:all .2s}
+.ib:hover{border-color:var(--red);color:var(--red)}
+.hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:6px;background:var(--bg3);border:1px solid var(--border);border-radius:8px}
+.hamburger span{width:18px;height:2px;background:var(--text);border-radius:2px;display:block}
+.content{padding:26px}
+.page{display:none}
+.page.active{display:block}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px 20px;transition:all .3s}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.stat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.stat-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.95rem}
+.si-blue{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.15)}
+.si-green{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.15)}
+.si-gold{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.15)}
+.si-red{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.15)}
+.si-purple{background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.15)}
+.stat-change{font-size:.72rem;font-weight:600;padding:2px 7px;border-radius:100px}
+.up{background:rgba(34,197,94,.1);color:var(--green)}
+.down{background:rgba(239,68,68,.1);color:var(--red)}
+.stat-num{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:900}
+.stat-label{font-size:.77rem;color:var(--muted);margin-top:2px}
+
+/* TABLE */
+.table-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+.table-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700}
+.search-input{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:7px 14px;color:var(--text);font-size:.82rem;outline:none;width:200px;font-family:'DM Sans',sans-serif}
+.search-input:focus{border-color:rgba(239,68,68,.4)}
+table{width:100%;border-collapse:collapse}
+th{padding:11px 16px;text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:13px 16px;font-size:.85rem;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg3)}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;padding:3px 9px;border-radius:100px;font-weight:600}
+.badge-green{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+.badge-red{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.badge-gold{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.2)}
+.badge-blue{background:rgba(59,130,246,.1);color:var(--blue);border:1px solid rgba(59,130,246,.2)}
+.badge-purple{background:rgba(139,92,246,.1);color:var(--purple);border:1px solid rgba(139,92,246,.2)}
+.action-btn{padding:5px 12px;border-radius:7px;font-size:.75rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s}
+.action-btn:hover{border-color:var(--red);color:var(--red)}
+
+/* SECTION HEADER */
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-ttl{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900}
+
+/* ── MODALS ── */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:9999;pointer-events:none;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex;pointer-events:all}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;animation:modalIn .3s ease}
+@keyframes modalIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.modal-header h3{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700}
+.modal-close{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{border-color:var(--red);color:var(--red)}
+.mf{margin-bottom:14px}
+.mf label{display:block;font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.mf input,.mf select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-size:.88rem;outline:none;transition:border .2s;font-family:'DM Sans',sans-serif}
+.mf input:focus,.mf select:focus{border-color:rgba(239,68,68,.4)}
+.mf-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-msg{font-size:.8rem;text-align:center;margin-bottom:10px;min-height:18px}
+.modal-msg.success{color:var(--green)}
+.modal-msg.error{color:var(--red)}
+.modal-btns{display:flex;gap:10px;margin-top:4px}
+.mb-cancel{flex:1;padding:11px;border-radius:10px;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.88rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.mb-cancel:hover{border-color:var(--red);color:var(--red)}
+.mb-save{flex:2;padding:11px;border-radius:10px;background:linear-gradient(135deg,var(--red),#b91c1c);color:#fff;font-size:.88rem;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.mb-save:hover{opacity:.9}
+
+.add-btn{padding:8px 16px;border-radius:9px;background:linear-gradient(135deg,var(--red),#b91c1c);color:#fff;font-size:.8rem;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;position:relative;z-index:10}
+
+/* CHARTS PLACEHOLDER */
+.chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px}
+.chart-card h3{font-family:'Playfair Display',serif;font-size:.97rem;margin-bottom:16px}
+.chart-placeholder{height:160px;background:var(--bg3);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.85rem}
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:120px;padding:10px 0}
+.bar{flex:1;border-radius:6px 6px 0 0;background:linear-gradient(to top,var(--red),rgba(239,68,68,.3));min-height:4px;transition:all .3s;cursor:pointer;position:relative}
+.bar:hover{opacity:.8}
+.bar-labels{display:flex;gap:8px;margin-top:6px}
+.bar-label{flex:1;text-align:center;font-size:.65rem;color:var(--muted)}
+
+/* MOBILE */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:90;pointer-events:none}.overlay.show{pointer-events:all}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .hamburger{display:flex}
+  .overlay.show{display:block;pointer-events:all}
+  .content{padding:14px}
+  .topbar{padding:0 14px 0 52px}
+  table{font-size:.78rem}
+  th,td{padding:9px 10px}
+  .search-input{width:130px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ ADMIN LOGIN ══ -->
+<div id="loginScreen">
+  <div class="admin-login-card">
+    <div class="admin-badge">🔐 Admin Access Only</div>
+    <div class="admin-logo">
+      <div class="ai">P</div>
+      <div class="at">PayPe <span>Admin</span></div>
+    </div>
+    <h2>Admin Sign In</h2>
+    <p>Enter your admin credentials to continue</p>
+    <div class="al-field"><label>Admin Email</label><input type="email" id="adminEmail" placeholder="admin@paype.co.in"/></div>
+    <div class="al-field"><label>Password</label><input type="password" id="adminPassword" placeholder="Admin password" onkeydown="if(event.key==='Enter')adminLogin()"/></div>
+    <div class="al-error" id="adminError"></div>
+    <button class="al-btn" onclick="adminLogin()">Sign In to Admin Panel →</button>
+    <div class="customer-link">Customer? <a href="/">Go to Customer Login →</a></div>
+  </div>
+</div>
+
+<!-- ══ ADMIN PANEL ══ -->
+<div id="adminPanel">
+  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="ai">P</div>
+      <div class="at">PayPe <span>Admin</span></div>
+      <span class="admin-badge-sm">ADMIN</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-label">Overview</div>
+      <button class="nav-item active" onclick="showPage('overview',this)"><span class="ni">📊</span> Dashboard</button>
+      <button class="nav-item" onclick="showPage('analytics',this)"><span class="ni">📈</span> Analytics</button>
+
+      <div class="nav-label">Management</div>
+      <button class="nav-item" onclick="showPage('customers',this)"><span class="ni">👥</span> Customers <span class="nb" id="custCount">0</span></button>
+      <button class="nav-item" onclick="showPage('apps',this)"><span class="ni">📱</span> Apps</button>
+      <button class="nav-item" onclick="showPage('payments',this)"><span class="ni">💳</span> Payments</button>
+      <button class="nav-item" onclick="showPage('plans',this)"><span class="ni">💎</span> Plans</button>
+
+      <div class="nav-label">System</div>
+      <button class="nav-item" onclick="showPage('support',this)"><span class="ni">💬</span> Support <span class="nb">3</span></button>
+      <button class="nav-item" onclick="showPage('settings',this)"><span class="ni">⚙️</span> Settings</button>
+      <button class="nav-item" onclick="showPage('logs',this)"><span class="ni">📋</span> Activity Logs</button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="admin-pill">
+        <div class="admin-av" id="adminAv">A</div>
+        <div class="admin-info">
+          <div class="an" id="adminName">Admin</div>
+          <div class="ar">Super Admin</div>
+        </div>
+      </div>
+      <div class="theme-row">
+        <button class="theme-btn" onclick="setTheme('light')">☀️ Light</button>
+        <button class="theme-btn active" onclick="setTheme('dark')">🌙 Dark</button>
+        <button class="theme-btn" onclick="setTheme('system')">💻 Sys</button>
+      </div>
+      <button class="logout-btn" onclick="adminLogout()">🚪 Logout</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="hamburger" id="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <button class="ib">🔔</button>
+        <button class="ib" onclick="loadCustomers()" title="Refresh data">🔄</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ── OVERVIEW PAGE ── -->
+      <div class="page active" id="page-overview">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header"><div class="stat-icon si-blue">👥</div><span class="stat-change up">+12%</span></div>
+            <div class="stat-num" id="statCustomers">0</div><div class="stat-label">Total Customers</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><div class="stat-icon si-green">💰</div><span class="stat-change up">+8%</span></div>
+            <div class="stat-num" id="totalRevenue">₹0</div><div class="stat-label">Total Revenue</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><div class="stat-icon si-gold">📱</div><span class="stat-change up">+5%</span></div>
+            <div class="stat-num">0</div><div class="stat-label">Total Apps</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><div class="stat-icon si-red">🎫</div><span class="stat-change down">-2%</span></div>
+            <div class="stat-num">3</div><div class="stat-label">Open Tickets</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header"><div class="stat-icon si-purple">🚀</div><span class="stat-change up">+20%</span></div>
+            <div class="stat-num">0</div><div class="stat-label">Published Apps</div>
+          </div>
+        </div>
+
+        <div class="chart-grid">
+          <div class="chart-card">
+            <h3>Monthly Revenue</h3>
+            <div class="bar-chart" id="revenueChart"></div>
+            <div class="bar-labels"><span class="bar-label">Jan</span><span class="bar-label">Feb</span><span class="bar-label">Mar</span><span class="bar-label">Apr</span><span class="bar-label">May</span><span class="bar-label">Jun</span></div>
+          </div>
+          <div class="chart-card">
+            <h3>New Signups</h3>
+            <div class="bar-chart" id="signupChart"></div>
+            <div class="bar-labels"><span class="bar-label">Jan</span><span class="bar-label">Feb</span><span class="bar-label">Mar</span><span class="bar-label">Apr</span><span class="bar-label">May</span><span class="bar-label">Jun</span></div>
+          </div>
+        </div>
+
+        <!-- Recent Customers -->
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title">Recent Customers</div>
+            <input class="search-input" placeholder="🔍 Search…" oninput="filterTable(this,'customersTable')"/>
+          </div>
+          <table id="customersTable">
+            <thead><tr><th>Name</th><th>Email / Phone</th><th>Plan</th><th>Status</th><th>Joined</th><th>Action</th></tr></thead>
+            <tbody id="customersBody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">No customers yet</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── CUSTOMERS PAGE ── -->
+      <div class="page" id="page-customers">
+        <div class="section-hdr"><div class="section-ttl">All Customers</div><button class="add-btn" onclick="showAddCustomerModal()">+ Add Customer</button></div>
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title">Customer List</div>
+            <input class="search-input" placeholder="🔍 Search…"/>
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Name</th><th>Email / Phone</th><th>Plan</th><th>Apps</th><th>Status</th><th>Joined</th><th>Action</th></tr></thead>
+            <tbody id="allCustomersBody"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px">No customers found</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── ANALYTICS PAGE ── -->
+      <div class="page" id="page-analytics">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-header"><div class="stat-icon si-blue">👁️</div><span class="stat-change up">+34%</span></div><div class="stat-num">0</div><div class="stat-label">Page Views</div></div>
+          <div class="stat-card"><div class="stat-header"><div class="stat-icon si-green">⏱️</div><span class="stat-change up">+12%</span></div><div class="stat-num">0m</div><div class="stat-label">Avg Session</div></div>
+          <div class="stat-card"><div class="stat-header"><div class="stat-icon si-red">📉</div><span class="stat-change down">+2%</span></div><div class="stat-num">0%</div><div class="stat-label">Bounce Rate</div></div>
+        </div>
+        <div class="chart-card"><h3>Traffic Overview</h3><div class="chart-placeholder">📈 Analytics data will appear here once you have traffic</div></div>
+      </div>
+
+      <!-- ── OTHER PAGES ── -->
+      <div class="page" id="page-apps"><div class="section-hdr"><div class="section-ttl">All Apps</div></div><div class="table-card"><div class="table-header"><div class="table-title">App List</div></div><table><thead><tr><th>App Name</th><th>Owner</th><th>Plan</th><th>Status</th><th>Created</th><th>Action</th></tr></thead><tbody><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">No apps created yet</td></tr></tbody></table></div></div>
+
+      <div class="page" id="page-payments"><div class="section-hdr"><div class="section-ttl">Payment Transactions</div></div><div class="table-card"><div class="table-header"><div class="table-title">Transactions</div></div><table><thead><tr><th>TXN ID</th><th>Customer</th><th>Amount</th><th>Plan</th><th>Status</th><th>Date</th></tr></thead><tbody id="paymentsTbody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">No transactions yet</td></tr></tbody></table></div></div>
+
+      <div class="page" id="page-plans">
+        <div class="section-hdr"><div class="section-ttl">Subscription Plans</div><button class="add-btn" onclick="showAddPlanModal()">+ Edit Plans</button></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:22px">
+            <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:var(--gold);margin-bottom:6px">Starter</div>
+            <div style="font-size:1.6rem;font-weight:900;margin-bottom:4px">₹749<span style="font-size:.8rem;color:var(--muted);font-weight:400">/mo</span></div>
+            <div style="font-size:.8rem;color:var(--muted)">3 Apps · 10K Users · Basic Analytics</div>
+            <div style="margin-top:12px;font-size:.78rem;color:var(--green)">● Active</div>
+          </div>
+          <div style="background:var(--bg2);border:1px solid rgba(245,158,11,.3);border-radius:14px;padding:22px">
+            <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:var(--gold);margin-bottom:6px">Pro ⚡</div>
+            <div style="font-size:1.6rem;font-weight:900;margin-bottom:4px">₹2,499<span style="font-size:.8rem;color:var(--muted);font-weight:400">/mo</span></div>
+            <div style="font-size:.8rem;color:var(--muted)">10 Apps · 100K Users · Advanced Analytics</div>
+            <div style="margin-top:12px;font-size:.78rem;color:var(--green)">● Active</div>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:22px">
+            <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:var(--gold);margin-bottom:6px">Enterprise</div>
+            <div style="font-size:1.6rem;font-weight:900;margin-bottom:4px">₹8,499<span style="font-size:.8rem;color:var(--muted);font-weight:400">/mo</span></div>
+            <div style="font-size:.8rem;color:var(--muted)">Unlimited Apps · Unlimited Users · Priority</div>
+            <div style="margin-top:12px;font-size:.78rem;color:var(--green)">● Active</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="page-support">
+        <div class="section-hdr"><div class="section-ttl">Support Tickets</div><button class="add-btn" onclick="loadTickets()">🔄 Refresh</button></div>
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title">All Tickets</div>
+            <input class="search-input" placeholder="🔍 Search tickets…" oninput="filterTable(this,'ticketTable')"/>
+          </div>
+          <table id="ticketTable">
+            <thead><tr><th>Ticket ID</th><th>Customer</th><th>Subject</th><th>Priority</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+            <tbody id="ticketsTbody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">Loading tickets…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="page" id="page-logs"><div class="section-hdr"><div class="section-ttl">Activity Logs</div></div><div class="table-card"><div class="table-header"><div class="table-title">System Logs</div></div><table><thead><tr><th>Time</th><th>Event</th><th>User</th><th>IP</th><th>Status</th></tr></thead><tbody id="logsBody"></tbody></table></div></div>
+
+      <div class="page" id="page-settings">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px">
+
+          <!-- AI API Keys -->
+          <div style="background:var(--bg2);border:1px solid rgba(56,189,248,.3);border-radius:14px;padding:22px;grid-column:1/-1">
+            <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:6px;color:#38bdf8">🤖 AI Builder API Keys</div>
+            <div style="color:var(--muted);font-size:.78rem;margin-bottom:16px">These keys power the AI App Builder. Stored securely in Firestore. Never exposed to customers.</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-bottom:14px">
+              <div>
+                <label style="display:block;font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:5px">✨ Anthropic Claude Key</label>
+                <input type="password" id="anthropicKey" placeholder="sk-ant-..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-size:.85rem;outline:none;font-family:'DM Sans',sans-serif"/>
+                <div style="font-size:.7rem;color:var(--muted);margin-top:4px">Best for code generation · console.anthropic.com</div>
+              </div>
+              <div>
+                <label style="display:block;font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:5px">🧠 OpenAI GPT-4 Key</label>
+                <input type="password" id="openaiKey" placeholder="sk-..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-size:.85rem;outline:none;font-family:'DM Sans',sans-serif"/>
+                <div style="font-size:.7rem;color:var(--muted);margin-top:4px">General purpose · platform.openai.com</div>
+              </div>
+              <div>
+                <label style="display:block;font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:5px">⚡ Google Gemini Key</label>
+                <input type="password" id="geminiKey" placeholder="AIza..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-size:.85rem;outline:none;font-family:'DM Sans',sans-serif"/>
+                <div style="font-size:.7rem;color:var(--muted);margin-top:4px">Fast & affordable · aistudio.google.com</div>
+              </div>
+              <div>
+                <label style="display:block;font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:5px">🎯 Active AI Model</label>
+                <select id="activeAI" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-size:.85rem;outline:none;font-family:'DM Sans',sans-serif">
+                  <option value="anthropic">Anthropic Claude (Recommended)</option>
+                  <option value="openai">OpenAI GPT-4</option>
+                  <option value="gemini">Google Gemini</option>
+                </select>
+              </div>
+            </div>
+            <div id="apiKeyMsg" style="font-size:.8rem;margin-bottom:8px;min-height:18px"></div>
+            <button onclick="saveApiKeys()" style="padding:11px 24px;border-radius:9px;background:linear-gradient(135deg,#38bdf8,#6366f1);color:#fff;font-weight:700;font-size:.87rem;border:none;cursor:pointer;font-family:'DM Sans',sans-serif">💾 Save API Keys</button>
+          </div>
+
+          <!-- Other API Keys -->
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:22px">
+            <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:16px">🔑 Other Integration Keys</div>
+            <div style="margin-bottom:12px">
+              <label style="display:block;font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:5px">💳 Razorpay Key ID</label>
+              <input type="password" id="rzpKeyAdmin" placeholder="rzp_live_..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-size:.85rem;outline:none;font-family:'DM Sans',sans-serif"/>
+            </div>
+            <div style="margin-bottom:12px">
+              <label style="display:block;font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:5px">📱 MSG91 Auth Key</label>
+              <input type="password" id="msg91Key" placeholder="MSG91 key..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-size:.85rem;outline:none;font-family:'DM Sans',sans-serif"/>
+            </div>
+            <button onclick="saveApiKeys()" style="width:100%;padding:11px;border-radius:9px;background:linear-gradient(135deg,var(--red),#b91c1c);color:#fff;font-weight:700;font-size:.87rem;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:4px">💾 Save Keys</button>
+          </div>
+
+          <!-- General Settings -->
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:22px">
+            <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:16px">⚙️ General Settings</div>
+            <div style="margin-bottom:12px"><label style="display:block;font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:5px">Site Name</label><input value="PayPe Technologies" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-size:.87rem;outline:none;font-family:'DM Sans',sans-serif"/></div>
+            <div style="margin-bottom:12px"><label style="display:block;font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:5px">Support Email</label><input value="itsupport@paype.co.in" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-size:.87rem;outline:none;font-family:'DM Sans',sans-serif"/></div>
+            <button style="width:100%;padding:11px;border-radius:9px;background:linear-gradient(135deg,var(--red),#b91c1c);color:#fff;font-weight:700;font-size:.87rem;border:none;cursor:pointer;font-family:'DM Sans',sans-serif">Save Settings</button>
+          </div>
+
+          <!-- Admin Security -->
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:22px">
+            <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:16px">🔐 Admin Security</div>
+            <div style="margin-bottom:12px"><label style="display:block;font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:5px">New Password</label><input type="password" id="adminNewPass" placeholder="New password" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-size:.87rem;outline:none;font-family:'DM Sans',sans-serif"/></div>
+            <div style="margin-bottom:12px"><label style="display:block;font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:5px">Confirm Password</label><input type="password" id="adminConfPass" placeholder="Confirm" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-size:.87rem;outline:none;font-family:'DM Sans',sans-serif"/></div>
+            <div id="passChangeMsg" style="font-size:.8rem;margin-bottom:8px;min-height:18px"></div>
+            <button onclick="changeAdminPass()" style="width:100%;padding:11px;border-radius:9px;background:linear-gradient(135deg,var(--red),#b91c1c);color:#fff;font-weight:700;font-size:.87rem;border:none;cursor:pointer;font-family:'DM Sans',sans-serif">Update Password</button>
+          </div>
+
+          <!-- Add Credits Manually -->
+          <div style="background:var(--bg2);border:1px solid rgba(34,197,94,.25);border-radius:14px;padding:22px">
+            <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:6px;color:var(--green)">💎 Add Credits Manually</div>
+            <div style="color:var(--muted);font-size:.78rem;margin-bottom:14px">Add credits to a customer's account manually (e.g. after offline payment)</div>
+            <div style="margin-bottom:12px"><label style="display:block;font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:5px">Customer UID or Email</label><input type="text" id="creditUid" placeholder="Firebase UID or email" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-size:.87rem;outline:none;font-family:'DM Sans',sans-serif"/></div>
+            <div style="margin-bottom:12px"><label style="display:block;font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:5px">Credits to Add</label><input type="number" id="creditAmount" placeholder="100" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-size:.87rem;outline:none;font-family:'DM Sans',sans-serif"/></div>
+            <div id="creditMsg" style="font-size:.8rem;margin-bottom:8px;min-height:18px"></div>
+            <button onclick="addCreditsAdmin()" style="width:100%;padding:11px;border-radius:9px;background:linear-gradient(135deg,var(--green),#15803d);color:#fff;font-weight:700;font-size:.87rem;border:none;cursor:pointer;font-family:'DM Sans',sans-serif">➕ Add Credits</button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script>
+const firebaseConfig={apiKey:"AIzaSyAQ1Cchvt21GIVJIYHXBjBX7nI52tT6Zdc",authDomain:"paype-technologies.firebaseapp.com",projectId:"paype-technologies",storageBucket:"paype-technologies.appspot.com",messagingSenderId:"4797605407",appId:"1:4797605407:web:9f4fd2564939bacc8e172a"};
+if(!firebase.apps.length)if(!firebase.apps.length){firebase.initializeApp(firebaseConfig);}
+const auth=firebase.auth();
+
+// ── ADMIN EMAILS (add your admin emails here) ─────────
+const ADMIN_EMAILS=['admin@paype.co.in','doctorramesh5@gmail.com'];
+
+// ── THEME ─────────────────────────────────────────────
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  localStorage.setItem('paype_admin_theme',t);
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
+  const map={light:0,dark:1,system:2};
+  document.querySelectorAll('.theme-btn')[map[t]]?.classList.add('active');
+}
+(function(){setTheme(localStorage.getItem('paype_admin_theme')||'dark');})();
+
+// ── ADMIN LOGIN ───────────────────────────────────────
+function adminLogin(){
+  const email=document.getElementById('adminEmail').value.trim();
+  const pass=document.getElementById('adminPassword').value;
+  const err=document.getElementById('adminError');
+  if(!email||!pass){err.textContent='Please enter email and password.';return;}
+  if(!ADMIN_EMAILS.includes(email)){err.textContent='Access denied. Not an admin account.';return;}
+  err.textContent='Signing in…';
+  auth.signInWithEmailAndPassword(email,pass)
+    .then(result=>{
+      if(!ADMIN_EMAILS.includes(result.user.email)){
+        auth.signOut();
+        err.textContent='Access denied. Not an admin account.';
+        return;
+      }
+      showAdminPanel(result.user);
+      addLog('Admin Login','System',result.user.email,'Success');
+    })
+    .catch(e=>{
+      if(e.code==='auth/wrong-password')err.textContent='Incorrect password.';
+      else if(e.code==='auth/user-not-found')err.textContent='Admin account not found.';
+      else err.textContent='Login failed: '+e.message;
+    });
+}
+
+function showAdminPanel(user){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('adminPanel').style.display='block';
+  document.getElementById('adminName').textContent=user.displayName||user.email.split('@')[0];
+  document.getElementById('adminAv').textContent=(user.displayName||user.email).charAt(0).toUpperCase();
+  loadCustomers();
+  renderCharts();
+}
+
+function adminLogout(){
+  if(confirm('Logout from admin panel?')){
+    auth.signOut().then(()=>{
+      document.getElementById('adminPanel').style.display='none';
+      document.getElementById('loginScreen').style.display='flex';
+    });
+  }
+}
+
+// ── CHECK AUTH ON LOAD ────────────────────────────────
+auth.onAuthStateChanged(user=>{
+  if(user&&ADMIN_EMAILS.includes(user.email)){
+    showAdminPanel(user);
+  }
+});
+
+// ── PAGE NAV ──────────────────────────────────────────
+function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(btn){document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));btn.classList.add('active');}
+  const titles={overview:'Dashboard',customers:'Customers',analytics:'Analytics',apps:'Apps',payments:'Payments',plans:'Plans',support:'Support',settings:'Settings',logs:'Activity Logs'};
+  document.getElementById('topbarTitle').textContent=titles[name]||name;
+  if(window.innerWidth<768){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
+}
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+
+// ── LOAD CUSTOMERS FROM FIREBASE ─────────────────────
+function loadCustomers(){
+  const db=firebase.firestore();
+
+  // Load customers
+  db.collection('paype_users').get().then(snap=>{
+    const count=snap.size;
+    document.getElementById('statCustomers').textContent=count;
+    document.getElementById('custCount').textContent=count;
+    const tbody=document.getElementById('customersBody');
+    const allTbody=document.getElementById('allCustomersBody');
+    if(count===0){
+      tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">No customers yet</td></tr>';
+      allTbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px">No customers yet</td></tr>';
+      return;
+    }
+    let rows='',allRows='',i=1,paidCount=0,revenue=0;
+    const sortedDocs = snap.docs.slice().sort((a,b)=>{
+      const ta=a.data().createdAt?new Date(a.data().createdAt).getTime():0;
+      const tb=b.data().createdAt?new Date(b.data().createdAt).getTime():0;
+      return tb-ta;
+    });
+    sortedDocs.forEach(doc=>{
+      const d=doc.data();
+      const name=d.name||d.displayName||'—';
+      const contact=d.email||d.phone||'—';
+      const plan=d.planName||d.plan||'—';
+      const paid=d.paid===true;
+      const credits=d.credits||0;
+      const date=d.createdAt?new Date(d.createdAt).toLocaleDateString('en-IN'):'—';
+      if(paid){paidCount++;revenue+=d.amount||0;}
+      const statusBadge=paid?'<span class="badge badge-green">● Paid</span>':'<span class="badge badge-gold">● Pending</span>';
+      const planBadge=plan==='Pro'?'badge-blue':plan==='Enterprise'?'badge-purple':'badge-gold';
+      const planBadgeHtml=plan!=='—'?`<span class="badge ${planBadge}">${plan}</span>`:'<span style="color:var(--muted)">—</span>';
+      rows+=`<tr><td><strong>${name}</strong></td><td style="color:var(--muted);font-size:.8rem">${contact}</td><td>${planBadgeHtml}</td><td>${statusBadge}</td><td style="color:var(--muted)">${date}</td><td><button class="action-btn" onclick="viewCustomer('${doc.id}')">View</button></td></tr>`;
+      allRows+=`<tr><td style="color:var(--muted)">${i++}</td><td><strong>${name}</strong></td><td style="color:var(--muted);font-size:.8rem">${contact}</td><td>${planBadgeHtml}</td><td style="color:var(--gold)">${credits}</td><td>${statusBadge}</td><td style="color:var(--muted)">${date}</td><td><button class="action-btn" onclick="viewCustomer('${doc.id}')">Manage</button></td></tr>`;
+    });
+    tbody.innerHTML=rows;
+    allTbody.innerHTML=allRows;
+    // Update revenue stat
+  }).catch(e=>{console.error('❌ Customers load error:',e);document.getElementById('customersBody').innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--red);padding:32px">Error loading customers: '+e.message+'</td></tr>';});
+
+  // Load payments
+  db.collection('paype_payments').get().then(snap=>{
+    const payTbody=document.getElementById('paymentsTbody');
+    if(!payTbody) return;
+    if(snap.empty){payTbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">No payments yet</td></tr>';return;}
+    let rows='',total=0;
+    const sortedPayDocs = snap.docs.slice().sort((a,b)=>{
+      const ta=a.data().paidAt?new Date(a.data().paidAt).getTime():0;
+      const tb=b.data().paidAt?new Date(b.data().paidAt).getTime():0;
+      return tb-ta;
+    });
+    sortedPayDocs.forEach(doc=>{
+      const d=doc.data();
+      total+=d.amount||0;
+      const date=d.paidAt?new Date(d.paidAt).toLocaleDateString('en-IN'):'—';
+      rows+=`<tr><td style="color:var(--muted);font-size:.78rem">${d.paymentId||'—'}</td><td><strong>${d.name||'—'}</strong><br/><span style="color:var(--muted);font-size:.75rem">${d.email||d.phone||''}</span></td><td style="color:var(--gold);font-weight:700">₹${(d.amount||0).toLocaleString('en-IN')}</td><td><span class="badge badge-blue">${d.planName||d.plan||'—'}</span></td><td><span class="badge badge-green">● Paid</span></td><td style="color:var(--muted)">${date}</td></tr>`;
+    });
+    payTbody.innerHTML=rows;
+    // Update payment stat
+    const payStatEl=document.getElementById('totalRevenue');
+    if(payStatEl) payStatEl.textContent='₹'+total.toLocaleString('en-IN');
+  }).catch(e=>{console.error('❌ Payments load error:',e);const pt=document.getElementById('paymentsTbody');if(pt)pt.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--red);padding:32px">Error loading payments: '+e.message+'</td></tr>';});
+
+  // Load API settings
+  db.collection('paype_settings').doc('api_keys').get().then(snap=>{
+    if(snap.exists){
+      const d=snap.data();
+      if(d.anthropic_key && document.getElementById('anthropicKey')) document.getElementById('anthropicKey').value=d.anthropic_key;
+      if(d.openai_key && document.getElementById('openaiKey')) document.getElementById('openaiKey').value=d.openai_key;
+      if(d.gemini_key && document.getElementById('geminiKey')) document.getElementById('geminiKey').value=d.gemini_key;
+      if(d.active_ai && document.getElementById('activeAI')) document.getElementById('activeAI').value=d.active_ai;
+    }
+  }).catch(()=>{});
+}
+
+function viewCustomer(uid){
+  const db=firebase.firestore();
+  db.collection('paype_users').doc(uid).get().then(doc=>{
+    if(!doc.exists){alert('Customer not found');return;}
+    const d=doc.data();
+    const info = [
+      'Name: '+(d.name||'—'),
+      'Email: '+(d.email||'—'),
+      'Phone: '+(d.phone||'—'),
+      'Plan: '+(d.planName||d.plan||'—'),
+      'Credits: '+(d.credits||0),
+      'Paid: '+(d.paid?'Yes':'No'),
+      'Payment ID: '+(d.paymentId||'—'),
+      'Joined: '+(d.createdAt?new Date(d.createdAt).toLocaleDateString('en-IN'):'—'),
+      'Last Login: '+(d.lastLogin?new Date(d.lastLogin).toLocaleDateString('en-IN'):'—')
+    ].join('\n');
+    alert('Customer Details:\n\n'+info);
+  });
+}
+
+function addCreditsManually(uid, credits){
+  const db=firebase.firestore();
+  db.collection('paype_users').doc(uid).update({
+    credits: firebase.firestore.FieldValue.increment(credits)
+  }).then(()=>{ alert('✅ '+credits+' credits added!'); loadCustomers(); })
+  .catch(e=>alert('Error: '+e.message));
+}
+
+function saveApiKeys(){
+  const db=firebase.firestore();
+  const data={
+    anthropic_key: document.getElementById('anthropicKey').value.trim(),
+    openai_key: document.getElementById('openaiKey').value.trim(),
+    gemini_key: document.getElementById('geminiKey').value.trim(),
+    active_ai: document.getElementById('activeAI').value,
+    msg91_key: document.getElementById('msg91Key')?document.getElementById('msg91Key').value.trim():'',
+    razorpay_key: document.getElementById('rzpKeyAdmin')?document.getElementById('rzpKeyAdmin').value.trim():'',
+    updatedAt: new Date().toISOString()
+  };
+  db.collection('paype_settings').doc('api_keys').set(data)
+    .then(()=>{ document.getElementById('apiKeyMsg').textContent='✅ API keys saved successfully!'; document.getElementById('apiKeyMsg').style.color='var(--green)'; setTimeout(()=>{ document.getElementById('apiKeyMsg').textContent=''; },3000); })
+    .catch(e=>{ document.getElementById('apiKeyMsg').textContent='❌ Error: '+e.message; document.getElementById('apiKeyMsg').style.color='var(--red)'; });
+}
+
+// ── RENDER CHARTS ─────────────────────────────────────
+function renderCharts(){
+  const rv=[40,65,55,80,70,90];
+  const su=[20,35,28,50,44,62];
+  const max1=Math.max(...rv),max2=Math.max(...su);
+  document.getElementById('revenueChart').innerHTML=rv.map(v=>`<div class="bar" style="height:${(v/max1)*100}%" title="₹${v}K"></div>`).join('');
+  document.getElementById('signupChart').innerHTML=su.map(v=>`<div class="bar" style="height:${(v/max2)*100}%;background:linear-gradient(to top,var(--blue),rgba(59,130,246,.3))" title="${v} signups"></div>`).join('');
+}
+
+// ── FILTER TABLE ──────────────────────────────────────
+function filterTable(input,tableId){
+  const q=input.value.toLowerCase();
+  document.getElementById(tableId).querySelectorAll('tbody tr').forEach(row=>{
+    row.style.display=row.textContent.toLowerCase().includes(q)?'':'none';
+  });
+}
+
+// ── ACTIVITY LOGS ─────────────────────────────────────
+const logs=[];
+function addLog(event,type,user,status){
+  logs.unshift({time:new Date().toLocaleTimeString('en-IN'),event,type,user,status});
+  const tbody=document.getElementById('logsBody');
+  if(tbody){
+    tbody.innerHTML=logs.slice(0,20).map(l=>`<tr><td style="color:var(--muted)">${l.time}</td><td>${l.event}</td><td>${l.user}</td><td style="color:var(--muted)">—</td><td><span class="badge ${l.status==='Success'?'badge-green':'badge-red'}">${l.status}</span></td></tr>`).join('');
+  }
+}
+
+// ── CHANGE ADMIN PASSWORD ─────────────────────────────
+function changeAdminPass(){
+  const np=document.getElementById('adminNewPass').value;
+  const cp=document.getElementById('adminConfPass').value;
+  const msg=document.getElementById('passChangeMsg');
+  if(np.length<8){msg.style.color='var(--red)';msg.textContent='Min 8 characters.';return;}
+  if(np!==cp){msg.style.color='var(--red)';msg.textContent='Passwords do not match.';return;}
+  auth.currentUser.updatePassword(np)
+    .then(()=>{msg.style.color='var(--green)';msg.textContent='✅ Password updated!';})
+    .catch(e=>{msg.style.color='var(--red)';msg.textContent='Error: '+e.message;});
+}
+
+// ── ADD CREDITS ADMIN ─────────────────────────────────
+function addCreditsAdmin(){
+  const uid=document.getElementById('creditUid').value.trim();
+  const credits=parseInt(document.getElementById('creditAmount').value)||0;
+  const msg=document.getElementById('creditMsg');
+  if(!uid){msg.style.color='var(--red)';msg.textContent='Enter UID or email.';return;}
+  if(credits<=0){msg.style.color='var(--red)';msg.textContent='Enter valid credits amount.';return;}
+  const db=firebase.firestore();
+  msg.style.color='var(--muted)';msg.textContent='Processing…';
+  // Try by UID first
+  db.collection('paype_users').doc(uid).get().then(doc=>{
+    if(doc.exists){
+      return doc.ref.update({credits: firebase.firestore.FieldValue.increment(credits)});
+    } else {
+      // Try by email
+      return db.collection('paype_users').where('email','==',uid).get().then(snap=>{
+        if(snap.empty) throw new Error('Customer not found');
+        return snap.docs[0].ref.update({credits: firebase.firestore.FieldValue.increment(credits)});
+      });
+    }
+  }).then(()=>{
+    msg.style.color='var(--green)';
+    msg.textContent='✅ '+credits+' credits added successfully!';
+    addLog('Credits Added','Admin',uid,'Success');
+    loadCustomers();
+  }).catch(e=>{
+    msg.style.color='var(--red)';
+    msg.textContent='❌ '+e.message;
+  });
+}
+
+// ── LOAD SUPPORT TICKETS ──────────────────────────────
+function loadTickets(){
+  const db=firebase.firestore();
+  db.collection('paype_tickets').get().then(snap=>{
+    const tbody=document.getElementById('ticketsTbody');
+    if(!tbody) return;
+    if(snap.empty){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">No tickets yet</td></tr>';return;}
+    let rows='';
+    const sortedTixDocs = snap.docs.slice().sort((a,b)=>{
+      const ta=a.data().createdAt?new Date(a.data().createdAt).getTime():0;
+      const tb=b.data().createdAt?new Date(b.data().createdAt).getTime():0;
+      return tb-ta;
+    });
+    sortedTixDocs.forEach(doc=>{
+      const d=doc.data();
+      const date=d.createdAt?new Date(d.createdAt).toLocaleDateString('en-IN'):'—';
+      const priority=d.priority||'Normal';
+      const status=d.status||'Open';
+      const priClass=priority==='High'?'badge-red':priority==='Low'?'badge-gold':'badge-blue';
+      const statClass=status==='Resolved'?'badge-green':status==='Open'?'badge-red':'badge-gold';
+      rows+=`<tr>
+        <td style="color:var(--muted);font-size:.75rem">#${doc.id.slice(-6).toUpperCase()}</td>
+        <td><strong>${d.name||'—'}</strong><br/><span style="color:var(--muted);font-size:.75rem">${d.email||d.phone||''}</span></td>
+        <td>${d.subject||'—'}</td>
+        <td><span class="badge ${priClass}">${priority}</span></td>
+        <td><span class="badge ${statClass}">${status}</span></td>
+        <td style="color:var(--muted)">${date}</td>
+        <td><button class="action-btn" onclick="resolveTicket('${doc.id}')">Resolve</button></td>
+      </tr>`;
+    });
+    tbody.innerHTML=rows;
+  }).catch(()=>{
+    const tbody=document.getElementById('ticketsTbody');
+    if(tbody) tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">No tickets yet — contact form submissions will appear here</td></tr>';
+  });
+}
+
+function resolveTicket(id){
+  if(!confirm('Mark this ticket as resolved?')) return;
+  const db=firebase.firestore();
+  db.collection('paype_tickets').doc(id).update({status:'Resolved',resolvedAt:new Date().toISOString()})
+    .then(()=>{ addLog('Ticket Resolved','Support',id,'Success'); loadTickets(); })
+    .catch(e=>alert('Error: '+e.message));
+}
+
+</script>
+
+<!-- ADD CUSTOMER MODAL -->
+<div class="modal-overlay" id="addCustomerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>👤 Add Customer Manually</h3>
+      <button class="modal-close" onclick="closeModal('addCustomerModal')">×</button>
+    </div>
+    <div class="mf"><label>Full Name *</label><input type="text" id="acName" placeholder="Customer full name"/></div>
+    <div class="mf"><label>Email Address *</label><input type="email" id="acEmail" placeholder="customer@email.com"/></div>
+    <div class="mf"><label>Mobile Number</label><input type="tel" id="acPhone" placeholder="9999999999" maxlength="10"/></div>
+    <div class="mf-row">
+      <div class="mf"><label>Plan</label>
+        <select id="acPlan">
+          <option value="starter">Starter - ₹799</option>
+          <option value="pro">Pro - ₹2,999</option>
+          <option value="enterprise">Enterprise - ₹8,999</option>
+        </select>
+      </div>
+      <div class="mf"><label>Credits</label><input type="number" id="acCredits" placeholder="100" value="100"/></div>
+    </div>
+    <div class="mf"><label>Password *</label><input type="password" id="acPassword" placeholder="Min 8 characters"/></div>
+    <div class="mf"><label>Payment Status</label>
+      <select id="acPaid">
+        <option value="true">Paid ✅</option>
+        <option value="false">Pending ⏳</option>
+      </select>
+    </div>
+    <div class="mf"><label>Notes (optional)</label><input type="text" id="acNotes" placeholder="Any notes about this customer"/></div>
+    <div class="modal-msg" id="acMsg"></div>
+    <div class="modal-btns">
+      <button class="mb-cancel" onclick="closeModal('addCustomerModal')">Cancel</button>
+      <button class="mb-save" onclick="saveNewCustomer()">➕ Add Customer</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PLANS MODAL -->
+<div class="modal-overlay" id="addPlanModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>💎 Manage Plans</h3>
+      <button class="modal-close" onclick="closeModal('addPlanModal')">×</button>
+    </div>
+
+    <div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:16px">
+      <div style="font-weight:700;font-size:.88rem;margin-bottom:12px;color:var(--gold)">⚡ Starter Plan</div>
+      <div class="mf-row">
+        <div class="mf"><label>Price (₹/month)</label><input type="number" id="starterPrice" value="799"/></div>
+        <div class="mf"><label>Credits</label><input type="number" id="starterCredits" value="100"/></div>
+      </div>
+      <div class="mf"><label>Apps Allowed</label><input type="number" id="starterApps" value="3"/></div>
+    </div>
+
+    <div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:16px">
+      <div style="font-weight:700;font-size:.88rem;margin-bottom:12px;color:var(--gold)">🚀 Pro Plan</div>
+      <div class="mf-row">
+        <div class="mf"><label>Price (₹/month)</label><input type="number" id="proPrice" value="2999"/></div>
+        <div class="mf"><label>Credits</label><input type="number" id="proCredits" value="500"/></div>
+      </div>
+      <div class="mf"><label>Apps Allowed</label><input type="number" id="proApps" value="10"/></div>
+    </div>
+
+    <div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:16px">
+      <div style="font-weight:700;font-size:.88rem;margin-bottom:12px;color:var(--gold)">👑 Enterprise Plan</div>
+      <div class="mf-row">
+        <div class="mf"><label>Price (₹/month)</label><input type="number" id="enterprisePrice" value="8999"/></div>
+        <div class="mf"><label>Credits</label><input type="number" id="enterpriseCredits" value="2000"/></div>
+      </div>
+      <div class="mf"><label>Apps Allowed</label><input type="number" id="enterpriseApps" value="0" placeholder="0 = Unlimited"/></div>
+    </div>
+
+    <div class="modal-msg" id="planMsg"></div>
+    <div class="modal-btns">
+      <button class="mb-cancel" onclick="closeModal('addPlanModal')">Cancel</button>
+      <button class="mb-save" onclick="savePlans()">💾 Save Plans</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── MODAL FUNCTIONS ───────────────────────────────────
+function showAddCustomerModal(){
+  document.getElementById('addCustomerModal').classList.add('show');
+  document.getElementById('acMsg').textContent='';
+  document.getElementById('acMsg').className='modal-msg';
+}
+
+function showAddPlanModal(){
+  document.getElementById('addPlanModal').classList.add('show');
+  document.getElementById('planMsg').textContent='';
+  var db=firebase.firestore();
+  db.collection('paype_settings').doc('plans').get().then(function(snap){
+    if(snap.exists){
+      var d=snap.data();
+      if(d.starter){document.getElementById('starterPrice').value=d.starter.price||799;document.getElementById('starterCredits').value=d.starter.credits||100;document.getElementById('starterApps').value=d.starter.apps||3;}
+      if(d.pro){document.getElementById('proPrice').value=d.pro.price||2999;document.getElementById('proCredits').value=d.pro.credits||500;document.getElementById('proApps').value=d.pro.apps||10;}
+      if(d.enterprise){document.getElementById('enterprisePrice').value=d.enterprise.price||8999;document.getElementById('enterpriseCredits').value=d.enterprise.credits||2000;document.getElementById('enterpriseApps').value=d.enterprise.apps||0;}
+    }
+  }).catch(function(){});
+}
+
+function closeModal(id){
+  document.getElementById(id).classList.remove('show');
+}
+
+function saveNewCustomer(){
+  var name=document.getElementById('acName').value.trim();
+  var email=document.getElementById('acEmail').value.trim();
+  var phone=document.getElementById('acPhone').value.trim();
+  var plan=document.getElementById('acPlan').value;
+  var credits=parseInt(document.getElementById('acCredits').value)||100;
+  var password=document.getElementById('acPassword').value;
+  var paid=document.getElementById('acPaid').value==='true';
+  var notes=document.getElementById('acNotes').value.trim();
+  var msg=document.getElementById('acMsg');
+  var planNames={starter:'Starter',pro:'Pro',enterprise:'Enterprise'};
+  var prices={starter:799,pro:2999,enterprise:8999};
+
+  if(!name){msg.className='modal-msg error';msg.textContent='Enter customer name.';return;}
+  if(!email||!email.includes('@')){msg.className='modal-msg error';msg.textContent='Enter valid email.';return;}
+  if(password.length<8){msg.className='modal-msg error';msg.textContent='Password must be min 8 characters.';return;}
+
+  msg.className='modal-msg';msg.textContent='Creating account…';
+
+  firebase.auth().createUserWithEmailAndPassword(email, password)
+    .then(function(result){
+      return result.user.updateProfile({displayName:name}).then(function(){return result;});
+    })
+    .then(function(result){
+      var db=firebase.firestore();
+      return db.collection('paype_users').doc(result.user.uid).set({
+        uid:result.user.uid, name:name, email:email, phone:phone,
+        plan:plan, planName:planNames[plan], credits:credits,
+        paid:paid, amount:paid?prices[plan]:0, notes:notes,
+        addedByAdmin:true, createdAt:new Date().toISOString(),
+        lastLogin:new Date().toISOString(), status:'active'
+      });
+    })
+    .then(function(){
+      msg.className='modal-msg success';
+      msg.textContent='✅ Customer added successfully!';
+      addLog('Customer Added','Admin',email,'Success');
+      setTimeout(function(){
+        closeModal('addCustomerModal');
+        loadCustomers();
+        ['acName','acEmail','acPhone','acCredits','acPassword','acNotes'].forEach(function(id){
+          var el=document.getElementById(id);
+          if(el) el.value='';
+        });
+      }, 1500);
+    })
+    .catch(function(e){
+      msg.className='modal-msg error';
+      if(e.code==='auth/email-already-in-use') msg.textContent='Email already registered.';
+      else msg.textContent='Error: '+e.message;
+    });
+}
+
+function savePlans(){
+  var db=firebase.firestore();
+  var msg=document.getElementById('planMsg');
+  var plans={
+    starter:{price:parseInt(document.getElementById('starterPrice').value)||799,credits:parseInt(document.getElementById('starterCredits').value)||100,apps:parseInt(document.getElementById('starterApps').value)||3},
+    pro:{price:parseInt(document.getElementById('proPrice').value)||2999,credits:parseInt(document.getElementById('proCredits').value)||500,apps:parseInt(document.getElementById('proApps').value)||10},
+    enterprise:{price:parseInt(document.getElementById('enterprisePrice').value)||8999,credits:parseInt(document.getElementById('enterpriseCredits').value)||2000,apps:parseInt(document.getElementById('enterpriseApps').value)||0},
+    updatedAt:new Date().toISOString()
+  };
+  msg.className='modal-msg';msg.textContent='Saving…';
+  db.collection('paype_settings').doc('plans').set(plans)
+    .then(function(){
+      msg.className='modal-msg success';
+      msg.textContent='✅ Plans saved successfully!';
+      addLog('Plans Updated','Admin','Settings','Success');
+      setTimeout(function(){ closeModal('addPlanModal'); }, 1500);
+    })
+    .catch(function(e){
+      msg.className='modal-msg error';
+      msg.textContent='Error: '+e.message;
+    });
+}
+
+// Close modal when clicking outside
+document.querySelectorAll('.modal-overlay').forEach(function(overlay){
+  overlay.addEventListener('click', function(e){
+    if(e.target===this) this.classList.remove('show');
+  });
+});
+</script>
+
+</body>
+</html>

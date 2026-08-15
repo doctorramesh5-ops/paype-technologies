@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PayPe – AI App Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root[data-theme="dark"]{
+  --bg:#0a0a14;--bg2:#0f0f1e;--bg3:#141428;
+  --border:#1e1e35;--text:#e8e8f8;--muted:#5a5a80;
+  --gold:#f59e0b;--red:#ef4444;--green:#22c55e;
+  --accent:#38bdf8;--accent2:#818cf8;
+  --card:rgba(14,14,28,0.85);
+}
+:root[data-theme="light"]{
+  --bg:#e8f4fd;--bg2:#d0eaf8;--bg3:#b8dff5;
+  --border:#7ec8e3;--text:#0a1628;--muted:#3a6080;
+  --gold:#d97706;--red:#dc2626;--green:#16a34a;
+  --accent:#0284c7;--accent2:#6366f1;
+  --card:rgba(255,255,255,0.9);
+}
+:root[data-theme="system"]{color-scheme:light dark}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s}
+
+
+
+/* ── AI BUILDER RESULT ── */
+#aiResultScreen{display:none;position:fixed;inset:0;z-index:200;background:var(--bg);flex-direction:column}
+#aiResultScreen.show{display:flex}
+.result-topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+.result-topbar h3{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.result-actions{display:flex;gap:8px}
+.ra-btn{padding:7px 14px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text);font-family:'DM Sans',sans-serif;transition:all .2s}
+.ra-btn:hover{border-color:var(--gold);color:var(--gold)}
+.ra-btn.primary{background:linear-gradient(135deg,var(--gold),var(--red));color:#000;border-color:transparent}
+.result-tabs{display:flex;gap:4px;padding:10px 20px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.rt-tab{padding:6px 14px;border-radius:7px;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--muted);border:none;background:transparent;font-family:'DM Sans',sans-serif;transition:all .2s}
+.rt-tab.active{background:var(--bg3);color:var(--text)}
+.result-body{flex:1;display:flex;overflow:hidden}
+#previewFrame{width:100%;height:100%;border:none;background:#fff}
+#codeView{width:100%;height:100%;overflow:auto;padding:20px;font-family:monospace;font-size:.82rem;line-height:1.6;color:#e2e2f0;background:#0a0a14;white-space:pre-wrap;word-break:break-all;display:none}
+
+/* LOADING OVERLAY */
+#aiLoading{display:none;position:fixed;inset:0;z-index:300;background:rgba(8,8,15,.95);flex-direction:column;align-items:center;justify-content:center;text-align:center}
+#aiLoading.show{display:flex}
+.ai-spinner{width:60px;height:60px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:24px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ai-loading-text{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;margin-bottom:8px}
+.ai-loading-sub{color:var(--muted);font-size:.85rem}
+.ai-progress{width:280px;height:4px;background:var(--border);border-radius:100px;margin-top:20px;overflow:hidden}
+.ai-progress-bar{height:100%;background:linear-gradient(90deg,var(--gold),var(--red));border-radius:100px;animation:progress 3s ease-in-out infinite}
+@keyframes progress{0%{width:0%}50%{width:70%}100%{width:95%}}
+
+
+/* ── ATTACH MENU ── */
+.attach-menu{display:none;position:absolute;bottom:52px;left:0;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:6px;z-index:100;min-width:200px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.attach-menu.show{display:block}
+.am-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:9px;cursor:pointer;font-size:.83rem;font-weight:500;color:var(--text);transition:all .2s}
+.am-item:hover{background:var(--bg3)}
+.am-item .ami{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+
+/* ── SEARCH BAR ── */
+.search-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);align-items:flex-start;justify-content:center;padding-top:80px}
+.search-overlay.show{display:flex}
+.search-box{width:100%;max-width:600px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);animation:slideDown .2s ease}
+@keyframes slideDown{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.search-input-wrap{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border)}
+.search-input-wrap input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:1rem;font-family:'DM Sans',sans-serif}
+.search-input-wrap input::placeholder{color:var(--muted)}
+.search-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;padding:4px}
+.search-results{padding:8px}
+.search-result-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:9px;cursor:pointer;transition:all .2s}
+.search-result-item:hover{background:var(--bg3)}
+.search-result-item .sri-icon{width:32px;height:32px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.search-result-item .sri-title{font-size:.85rem;font-weight:600}
+.search-result-item .sri-sub{font-size:.73rem;color:var(--muted)}
+.search-empty{text-align:center;padding:28px;color:var(--muted);font-size:.85rem}
+
+/* ── SETTINGS PANEL ── */
+.settings-panel{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px}
+.settings-panel.show{display:flex}
+.settings-box{background:var(--bg2);border:1px solid var(--border);border-radius:20px;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;animation:modalIn .3s ease}
+@keyframes modalIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.sp-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border)}
+.sp-header h3{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700}
+.sp-close{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:1.1rem}
+.sp-section{padding:18px 22px;border-bottom:1px solid var(--border)}
+.sp-section:last-child{border-bottom:none}
+.sp-section h4{font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;margin-bottom:12px}
+.sp-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
+.sp-label{font-size:.85rem;font-weight:500}
+.sp-desc{font-size:.73rem;color:var(--muted);margin-top:2px}
+.sp-toggle{width:40px;height:22px;border-radius:100px;background:var(--border);cursor:pointer;position:relative;transition:background .2s;border:none;flex-shrink:0}
+.sp-toggle.on{background:linear-gradient(135deg,var(--gold),var(--red))}
+.sp-toggle::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s}
+.sp-toggle.on::after{transform:translateX(18px)}
+.sp-select{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-size:.82rem;outline:none;font-family:'DM Sans',sans-serif}
+
+/* ── FILE PREVIEW ── */
+.file-preview{display:none;flex-wrap:wrap;gap:8px;padding:8px 0 4px}
+.file-preview.show{display:flex}
+.fp-item{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:6px 10px;font-size:.78rem;font-weight:500}
+.fp-item img{width:32px;height:32px;border-radius:5px;object-fit:cover}
+.fp-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:0 2px}
+.fp-remove:hover{color:var(--red)}
+
+/* VOICE BTN */
+.voice-recording{animation:voicePulse .6s ease-in-out infinite alternate}
+@keyframes voicePulse{from{box-shadow:0 0 0 0 rgba(239,68,68,.4)}to{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
+
+/* ── SIDEBAR ── */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:99;transition:transform .3s}
+.sb-logo{display:flex;align-items:center;gap:8px;padding:18px 16px;border-bottom:1px solid var(--border)}
+.sb-logo-icon{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--red));display:flex;align-items:center;justify-content:center;color:#000;font-weight:900;font-size:.9rem;font-family:'Playfair Display',serif;flex-shrink:0}
+.sb-logo-text{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:900}
+.sb-logo-text span{color:var(--gold)}
+.sb-nav{flex:1;padding:12px 8px;overflow-y:auto}
+.sb-label{font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;padding:0 8px;margin:14px 0 6px}
+.sb-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:9px;color:var(--muted);font-size:.83rem;font-weight:500;cursor:pointer;transition:all .2s;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
+.sb-item:hover{background:var(--bg3);color:var(--text)}
+.sb-item.active{background:rgba(56,189,248,.1);color:var(--accent);border:1px solid rgba(56,189,248,.15)}
+.sb-item .ni{width:18px;text-align:center;font-size:.85rem;flex-shrink:0}
+.sb-bottom{padding:10px 8px;border-top:1px solid var(--border)}
+.sb-user{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);margin-bottom:8px;cursor:pointer}
+.sb-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--red));display:flex;align-items:center;justify-content:center;color:#000;font-weight:900;font-size:.75rem;flex-shrink:0;overflow:hidden}
+.sb-info{flex:1;min-width:0}
+.sb-name{font-size:.78rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-plan{font-size:.67rem;color:var(--gold)}
+.sb-theme{display:flex;gap:3px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:3px;margin-bottom:7px}
+.sb-tbtn{flex:1;padding:5px 3px;border-radius:6px;border:none;cursor:pointer;background:transparent;color:var(--muted);font-size:.7rem;font-weight:600;transition:all .2s;font-family:'DM Sans',sans-serif}
+.sb-tbtn.active{background:linear-gradient(135deg,var(--gold),var(--red));color:#000}
+.sb-logout{width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(239,68,68,.25);color:var(--red);font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.sb-logout:hover{background:rgba(239,68,68,.08)}
+.ham{display:none;position:fixed;top:14px;left:14px;z-index:200;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:7px;cursor:pointer;flex-direction:column;gap:4px}
+.ham span{width:16px;height:2px;background:var(--text);border-radius:2px;display:block}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0!important}
+  .topbar{padding-left:56px!important}
+  .ham{display:flex}
+}
+
+/* ── ANIMATED BACKGROUND ── */
+.bg-scene{position:fixed;inset:0;z-index:0;overflow:hidden}
+.bg-scene canvas{position:absolute;inset:0;width:100%;height:100%}
+.bg-gradient{position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(56,189,248,.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(129,140,248,.08) 0%,transparent 50%),radial-gradient(ellipse at 50% 100%,rgba(245,158,11,.05) 0%,transparent 50%)}
+
+/* ── TOPBAR ── */
+.topbar{position:fixed;top:0;left:220px;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:rgba(10,10,20,.7);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.tb-left{display:flex;align-items:center;gap:12px}
+.tb-logo{display:flex;align-items:center;gap:8px;font-family:'Playfair Display',serif;font-size:1rem;font-weight:900}
+.tb-logo-icon{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--gold),var(--red));display:flex;align-items:center;justify-content:center;color:#000;font-weight:900;font-size:.85rem}
+.tb-logo span{color:var(--gold)}
+.tb-nav a{color:var(--muted);font-size:.82rem;font-weight:500;padding:5px 10px;border-radius:7px;transition:all .2s;cursor:pointer;text-decoration:none}
+.tb-nav a:hover,.tb-nav a.active{color:var(--text);background:var(--bg3)}
+.tb-right{display:flex;align-items:center;gap:8px}
+.credits-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:100px;background:linear-gradient(135deg,var(--gold),var(--red));color:#000;font-size:.8rem;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.credits-btn:hover{opacity:.9;transform:translateY(-1px)}
+.icon-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--bg2);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:all .2s;position:relative}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent)}
+.notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1.5px solid var(--bg)}
+.avatar-btn{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--red));border:2px solid var(--gold);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#000;font-weight:900;font-size:.85rem;overflow:hidden;transition:all .2s}
+.avatar-btn:hover{transform:scale(1.05)}
+
+/* THEME ROW */
+.theme-row{display:flex;gap:3px;background:var(--bg2);border:1px solid var(--border);border-radius:100px;padding:3px}
+.tbtn{width:26px;height:26px;border-radius:50%;border:none;cursor:pointer;background:transparent;color:var(--muted);font-size:.78rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.tbtn.active{background:linear-gradient(135deg,var(--gold),var(--red));color:#000}
+
+/* ── MAIN CONTENT ── */
+.main{position:relative;z-index:10;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px 40px;margin-left:220px}
+
+/* HERO */
+.hero{text-align:center;max-width:700px;width:100%;animation:fadeUp .6s ease both}
+@keyframes fadeUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+.plan-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);border-radius:100px;padding:7px 16px;font-size:.78rem;color:var(--accent);font-weight:600;margin-bottom:24px;cursor:pointer;transition:all .2s}
+.plan-pill:hover{background:rgba(56,189,248,.15)}
+.plan-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5vw,3.5rem);font-weight:900;line-height:1.1;margin-bottom:14px;letter-spacing:-.5px}
+.hero h1 .grad{background:linear-gradient(135deg,var(--accent),var(--accent2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--muted);font-size:1rem;margin-bottom:36px}
+
+/* BUILD TABS */
+.build-tabs{display:flex;gap:4px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;padding:4px;margin-bottom:16px;width:fit-content;margin-left:auto;margin-right:auto}
+.btab{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;border:none;background:transparent;font-family:'DM Sans',sans-serif}
+.btab:hover{color:var(--text)}
+.btab.active{background:var(--bg2);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+
+/* INPUT BOX */
+.input-box{width:100%;max-width:680px;background:rgba(14,14,28,.9);border:1px solid var(--border);border-radius:18px;padding:18px 18px 14px;backdrop-filter:blur(20px);box-shadow:0 20px 60px rgba(0,0,0,.4);transition:border .3s}
+.input-box:focus-within{border-color:rgba(56,189,248,.4);box-shadow:0 20px 60px rgba(0,0,0,.4),0 0 0 3px rgba(56,189,248,.08)}
+.input-box textarea{width:100%;background:transparent;border:none;outline:none;color:var(--text);font-size:.95rem;font-family:'DM Sans',sans-serif;resize:none;min-height:80px;line-height:1.6}
+.input-box textarea::placeholder{color:var(--muted)}
+.input-actions{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.ia-left{display:flex;align-items:center;gap:8px}
+.ia-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.ia-btn:hover{border-color:var(--accent);color:var(--accent)}
+.model-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(245,158,11,.08);color:var(--gold);font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.ia-right{display:flex;align-items:center;gap:8px}
+.vis-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.vis-btn:hover{border-color:var(--border);color:var(--text)}
+.send-btn{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem;transition:all .2s}
+.send-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(56,189,248,.3)}
+
+/* QUICK PROMPTS */
+.quick-prompts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:20px}
+.qp{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:100px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);font-size:.8rem;font-weight:500;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.qp:hover{border-color:var(--accent);color:var(--text);background:rgba(56,189,248,.06)}
+.qp .qi{width:20px;height:20px;border-radius:5px;background:linear-gradient(135deg,var(--gold),var(--red));display:flex;align-items:center;justify-content:center;font-size:.7rem}
+
+/* RECENT PROJECTS */
+.recent{width:100%;max-width:700px;margin-top:40px;animation:fadeUp .6s ease .2s both}
+.recent h3{font-size:.78rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;margin-bottom:12px}
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.proj-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all .2s}
+.proj-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.proj-icon{width:32px;height:32px;border-radius:8px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;font-size:1rem}
+.proj-card h4{font-size:.85rem;font-weight:600;margin-bottom:3px}
+.proj-card p{font-size:.73rem;color:var(--muted)}
+.empty-proj{text-align:center;padding:24px;color:var(--muted);font-size:.83rem;border:1px dashed var(--border);border-radius:12px}
+
+/* ── SIDE MENU (account/settings) ── */
+.side-menu{position:fixed;top:0;right:-320px;bottom:0;width:300px;background:var(--bg2);border-left:1px solid var(--border);z-index:200;transition:right .3s;padding:20px;overflow-y:auto}
+.side-menu.open{right:0}
+.sm-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.sm-header h3{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700}
+.sm-close{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem}
+.sm-user{display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg3);border-radius:12px;margin-bottom:16px}
+.sm-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--red));display:flex;align-items:center;justify-content:center;color:#000;font-weight:900;font-size:1rem;flex-shrink:0;overflow:hidden}
+.sm-name{font-weight:600;font-size:.88rem}
+.sm-plan{font-size:.72rem;color:var(--gold);margin-top:2px}
+.sm-section{margin-bottom:16px}
+.sm-section h4{font-size:.7rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:600;margin-bottom:8px}
+.sm-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;cursor:pointer;transition:all .2s;font-size:.85rem;color:var(--muted)}
+.sm-item:hover{background:var(--bg3);color:var(--text)}
+.sm-item .si{width:18px;text-align:center}
+.sm-divider{height:1px;background:var(--border);margin:12px 0}
+
+/* Theme selector in side menu */
+.theme-selector{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px}
+.ts-opt{padding:8px 6px;border-radius:9px;border:1px solid var(--border);text-align:center;cursor:pointer;font-size:.75rem;font-weight:600;color:var(--muted);transition:all .2s}
+.ts-opt.active{border-color:var(--gold);color:var(--gold);background:rgba(245,158,11,.08)}
+.ts-opt:hover:not(.active){background:var(--bg3)}
+
+.logout-btn{width:100%;padding:10px;border-radius:10px;background:transparent;border:1px solid rgba(239,68,68,.3);color:var(--red);font-size:.83rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-top:8px}
+.logout-btn:hover{background:rgba(239,68,68,.08)}
+
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150;backdrop-filter:blur(4px)}
+.overlay.show{display:block}
+
+/* MOBILE */
+@media(max-width:640px){
+  .topbar{padding:10px 14px}
+  .tb-nav{display:none}
+  .theme-row{display:none}
+  .hero h1{font-size:1.9rem}
+  .build-tabs{overflow-x:auto;width:100%}
+  .quick-prompts{gap:6px}
+  .qp{padding:7px 12px;font-size:.75rem}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-scene">
+  <div class="bg-gradient"></div>
+  <canvas id="bgCanvas"></canvas>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSideMenu()"></div>
+
+<!-- HAMBURGER -->
+<div class="ham" id="ham" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">P</div>
+    <div class="sb-logo-text">PayPe <span>Tech</span></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-label">Main</div>
+    <button class="sb-item active" onclick="sbNav(this)"><span class="ni">🏠</span> Dashboard</button>
+    <button class="sb-item" onclick="sbNav(this)"><span class="ni">⚡</span> App Builder</button>
+    <button class="sb-item" onclick="sbNav(this)"><span class="ni">📱</span> My Apps</button>
+    <button class="sb-item" onclick="sbNav(this)"><span class="ni">📊</span> Analytics</button>
+    <div class="sb-label">Tools</div>
+    <button class="sb-item" onclick="sbNav(this)"><span class="ni">🎨</span> Templates</button>
+    <button class="sb-item" onclick="sbNav(this)"><span class="ni">🔌</span> Integrations</button>
+    <button class="sb-item" onclick="sbNav(this)"><span class="ni">💳</span> Payments</button>
+    <div class="sb-label">Account</div>
+    <button class="sb-item" onclick="openSideMenu()"><span class="ni">⚙️</span> Settings</button>
+    <button class="sb-item" onclick="sbNav(this)"><span class="ni">💬</span> Support</button>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-user" onclick="openSideMenu()">
+      <div class="sb-av" id="sbAvatar">U</div>
+      <div class="sb-info">
+        <div class="sb-name" id="sbName">Loading…</div>
+        <div class="sb-plan" id="sbPlan">Starter Plan</div>
+      </div>
+    </div>
+    <div class="sb-theme">
+      <button class="sb-tbtn" onclick="setTheme('light')">☀️ Light</button>
+      <button class="sb-tbtn active" onclick="setTheme('dark')">🌙 Dark</button>
+      <button class="sb-tbtn" onclick="setTheme('system')">💻 Sys</button>
+    </div>
+    <button class="sb-logout" onclick="logout()">🚪 Sign Out</button>
+  </div>
+</div>
+
+<!-- ── TOPBAR ── -->
+<div class="topbar">
+  <div class="tb-left">
+    <div class="tb-logo"><div class="tb-logo-icon">P</div>PayPe <span>Tech</span></div>
+    <nav class="tb-nav" style="display:flex;gap:4px;margin-left:8px">
+      <a class="active">Home</a>
+      <a onclick="showSection('projects')">Projects</a>
+      <a onclick="showSection('settings')">Settings</a>
+    </nav>
+  </div>
+  <div class="tb-right">
+    <div class="theme-row">
+      <button class="tbtn" onclick="setTheme('light')" title="Light">☀️</button>
+      <button class="tbtn active" onclick="setTheme('dark')" title="Dark">🌙</button>
+      <button class="tbtn" onclick="setTheme('system')" title="System">💻</button>
+    </div>
+    <button class="credits-btn" onclick="showCredits()">
+      💎 Buy Credits
+    </button>
+    <button class="icon-btn" onclick="showNotifications()">
+      🔔<span class="notif-dot"></span>
+    </button>
+    <button class="avatar-btn" id="avatarBtn" onclick="openSideMenu()">U</button>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main">
+  <div class="hero">
+
+    <!-- Plan pill -->
+    <div class="plan-pill" onclick="openSideMenu()">
+      <span class="dot"></span>
+      <span id="heroPlanName">Starter Plan</span>
+      <span style="opacity:.5">›</span>
+    </div>
+
+    <h1>Where ideas become <span class="grad">reality</span></h1>
+    <p>Build fully functional apps and websites through simple conversations</p>
+
+    <!-- Build type tabs -->
+    <div class="build-tabs">
+      <button class="btab active" onclick="selectBuildType(this,'fullstack')">
+        <span>⚡</span> Full Stack App
+      </button>
+      <button class="btab" onclick="selectBuildType(this,'mobile')">
+        <span>📱</span> Mobile App
+      </button>
+      <button class="btab" onclick="selectBuildType(this,'landing')">
+        <span>🖥️</span> Landing Page
+      </button>
+      <button class="btab" onclick="selectBuildType(this,'ecommerce')">
+        <span>🛒</span> E-Commerce
+      </button>
+    </div>
+
+    <!-- Input box -->
+    <div class="input-box">
+      <textarea id="promptInput" placeholder="Build me a clone of Netflix..." rows="3"></textarea>
+      <!-- File Preview -->
+      <div class="file-preview" id="filePreview"></div>
+
+      <div class="input-actions">
+        <div class="ia-left" style="position:relative">
+          <!-- ATTACH BUTTON -->
+          <button class="ia-btn" onclick="toggleAttachMenu()" id="attachBtn">📎 Attach</button>
+          <div class="attach-menu" id="attachMenu">
+            <div class="am-item" onclick="triggerFileUpload('image')"><div class="ami" style="background:rgba(56,189,248,.1)">🖼️</div><div><div style="font-weight:600">Screenshot / Image</div><div style="font-size:.71rem;color:var(--muted)">JPG, PNG, GIF, WebP</div></div></div>
+            <div class="am-item" onclick="triggerFileUpload('file')"><div class="ami" style="background:rgba(245,158,11,.1)">📄</div><div><div style="font-weight:600">Attach File</div><div style="font-size:.71rem;color:var(--muted)">PDF, TXT, HTML, JS, CSS</div></div></div>
+            <div class="am-item" onclick="addProjectRef()"><div class="ami" style="background:rgba(34,197,94,.1)">📁</div><div><div style="font-weight:600">Add Project</div><div style="font-size:.71rem;color:var(--muted)">Reference existing project</div></div></div>
+          </div>
+          <!-- Hidden file inputs -->
+          <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleFileSelect(this,'image')"/>
+          <input type="file" id="fileInput" accept=".pdf,.txt,.html,.js,.css,.json,.md" style="display:none" onchange="handleFileSelect(this,'file')"/>
+
+          <!-- MODEL SELECTOR -->
+          <button class="model-btn" onclick="toggleModelMenu()" id="modelBtn">⚡ PayPe AI <span style="opacity:.5">▾</span></button>
+          <div id="modelMenu" style="display:none;position:absolute;top:44px;left:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:5px;z-index:100;min-width:160px;box-shadow:0 10px 30px rgba(0,0,0,.4)">
+            <div onclick="selectAIModel('claude')" id="model_claude" style="padding:9px 14px;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:600;color:var(--gold);background:rgba(245,158,11,.08)">⚡ PayPe Coding</div>
+            <div onclick="selectAIModel('openai')" id="model_openai" style="padding:9px 14px;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:600;color:var(--text)" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">💬 PayPe Chat</div>
+          </div>
+        </div>
+        <div class="ia-right">
+          <!-- AUDIENCE DROPDOWN -->
+          <div style="position:relative">
+            <button class="vis-btn" onclick="toggleVisMenu()" id="visBtn">🌐 Public <span style="opacity:.5">▾</span></button>
+            <div id="visMenu" style="display:none;position:absolute;bottom:44px;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:6px;z-index:100;min-width:200px;box-shadow:0 10px 30px rgba(0,0,0,.4)">
+              <div style="font-size:.65rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:1px;padding:6px 12px 4px">Build For</div>
+              <div onclick="selectAudience('public','🌐 Public')" id="aud_public" style="padding:9px 14px;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:600;display:flex;align-items:center;gap:8px;background:rgba(245,158,11,.08);color:var(--gold)">🌐 <div><div>Public</div><div style="font-size:.7rem;font-weight:400;color:var(--muted)">General users</div></div></div>
+              <div onclick="selectAudience('student','🎓 Student')" id="aud_student" style="padding:9px 14px;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:600;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">🎓 <div><div>Student</div><div style="font-size:.7rem;font-weight:400;color:var(--muted)">Learning & education</div></div></div>
+              <div onclick="selectAudience('developer','👨‍💻 Developer')" id="aud_developer" style="padding:9px 14px;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:600;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">👨‍💻 <div><div>Developer</div><div style="font-size:.7rem;font-weight:400;color:var(--muted)">Technical & advanced</div></div></div>
+              <div onclick="selectAudience('business','💼 Business')" id="aud_business" style="padding:9px 14px;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:600;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">💼 <div><div>Business</div><div style="font-size:.7rem;font-weight:400;color:var(--muted)">Professional & corporate</div></div></div>
+            </div>
+          </div>
+          <button class="ia-btn" onclick="openSettings()">⚙️</button>
+          <button class="ia-btn" id="voiceBtn" onclick="toggleVoice()" title="Hold to record">🎤</button>
+          <button class="send-btn" onclick="submitPrompt()">↑</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick prompts -->
+    <div class="quick-prompts">
+      <button class="qp" onclick="usePrompt('Build an invoice generator app')"><span class="qi">📄</span> Invoice Generator</button>
+      <button class="qp" onclick="usePrompt('Create a restaurant menu app')"><span class="qi">🍽️</span> Restaurant Menu</button>
+      <button class="qp" onclick="usePrompt('Build an employee attendance tracker')"><span class="qi">👥</span> Attendance Tracker</button>
+      <button class="qp" onclick="usePrompt('Create an online booking system')"><span class="qi">📅</span> Booking System</button>
+      <button class="qp" onclick="usePrompt('Build a payment dashboard')"><span class="qi">💳</span> Payment Dashboard</button>
+    </div>
+
+  </div>
+
+  <!-- Recent Projects -->
+  <div class="recent">
+    <h3>Recent Projects</h3>
+    <div class="proj-grid" id="projGrid">
+      <div class="empty-proj">No projects yet.<br/>Start building above! ⚡</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SIDE MENU ── -->
+<div class="side-menu" id="sideMenu">
+  <div class="sm-header">
+    <h3>My Account</h3>
+    <button class="sm-close" onclick="closeSideMenu()">×</button>
+  </div>
+
+  <div class="sm-user">
+    <div class="sm-avatar" id="smAvatar">U</div>
+    <div>
+      <div class="sm-name" id="smName">Loading…</div>
+      <div class="sm-plan" id="smPlan">Starter Plan</div>
+    </div>
+  </div>
+
+  <div class="sm-section">
+    <div class="sm-item"><span class="si">🏠</span> Dashboard</div>
+    <div class="sm-item"><span class="si">📱</span> My Apps</div>
+    <div class="sm-item"><span class="si">💳</span> Billing & Plans</div>
+    <div class="sm-item"><span class="si">⚙️</span> Account Settings</div>
+    <div class="sm-item"><span class="si">💬</span> Support</div>
+  </div>
+
+  <div class="sm-divider"></div>
+
+  <div class="sm-section">
+    <h4>Appearance</h4>
+    <div class="theme-selector">
+      <div class="ts-opt" id="ts-light" onclick="setTheme('light')">☀️<br/>Light</div>
+      <div class="ts-opt active" id="ts-dark" onclick="setTheme('dark')">🌙<br/>Dark</div>
+      <div class="ts-opt" id="ts-system" onclick="setTheme('system')">💻<br/>System</div>
+    </div>
+  </div>
+
+  <div class="sm-divider"></div>
+
+  <button class="logout-btn" onclick="logout()">🚪 Sign Out</button>
+</div>
+
+<!-- Firebase -->
+<script src="https://cdn.jsdelivr.net/npm/firebase@9.22.2/firebase-app-compat.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@9.22.2/firebase-auth-compat.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@9.22.2/firebase-firestore-compat.min.js"></script>
+<script>
+// ── FIREBASE ──────────────────────────────────────────
+const FB = {
+  apiKey:"AIzaSyAQ1Cchvt21GIVJIYHXBjBX7nI52tT6Zdc",
+  authDomain:"paype-technologies.firebaseapp.com",
+  projectId:"paype-technologies",
+  storageBucket:"paype-technologies.appspot.com",
+  messagingSenderId:"4797605407",
+  appId:"1:4797605407:web:9f4fd2564939bacc8e172a"
+};
+if(!firebase.apps.length) firebase.initializeApp(FB);
+const auth = firebase.auth();
+
+// ── THEME ─────────────────────────────────────────────
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  localStorage.setItem('paype_theme',t);
+  document.querySelectorAll('.tbtn').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.sb-tbtn').forEach(function(b){b.classList.remove('active');});
+  var map={light:0,dark:1,system:2};
+  if(document.querySelectorAll('.tbtn')[map[t]]) document.querySelectorAll('.tbtn')[map[t]].classList.add('active');
+  if(document.querySelectorAll('.sb-tbtn')[map[t]]) document.querySelectorAll('.sb-tbtn')[map[t]].classList.add('active');
+  ['light','dark','system'].forEach(function(th){
+    var el=document.getElementById('ts-'+th);
+    if(el) el.classList.toggle('active',th===t);
+  });
+  // Light theme - sky blue BG
+  if(t==='light'){
+    document.querySelector('.bg-gradient').style.background=
+      'radial-gradient(ellipse at 30% 30%,rgba(56,189,248,.25) 0%,transparent 60%),radial-gradient(ellipse at 70% 70%,rgba(129,140,248,.15) 0%,transparent 60%)';
+  } else {
+    document.querySelector('.bg-gradient').style.background='';
+  }
+}
+setTheme(localStorage.getItem('paype_theme')||'dark');
+
+// ── AUTH ──────────────────────────────────────────────
+var db = firebase.firestore();
+document.body.style.visibility='hidden';
+
+auth.onAuthStateChanged(function(user){
+  var phoneSession=localStorage.getItem('paype_phone');
+  var loginMethod=localStorage.getItem('paype_login_method');
+
+  if(!user && loginMethod==='phone' && phoneSession){
+    document.body.style.visibility='visible';
+    // Load phone user from Firestore
+    db.collection('paype_users').where('phone','==',phoneSession).get()
+      .then(function(snap){
+        if(!snap.empty){
+          var d = snap.docs[0].data();
+          var credits = d.credits || 0;
+          localStorage.setItem('paype_credits', String(credits));
+          localStorage.setItem('paype_plan', d.plan || 'starter');
+          loadUser('+91 '+phoneSession, null, d.planName||d.plan||'Starter', null, credits);
+        } else {
+          loadUser('+91 '+phoneSession, null, 'Starter', null, 0);
+        }
+      }).catch(function(){
+        loadUser('+91 '+phoneSession, null, 'Starter', null, 0);
+      });
+    return;
+  }
+
+  if(!user){ window.location.href='/login'; return; }
+  document.body.style.visibility='visible';
+
+  // Load user data from Firestore
+  db.collection('paype_users').doc(user.uid).get()
+    .then(function(doc){
+      var name = user.displayName||user.email||'User';
+      var plan = 'Starter';
+      var credits = 0;
+
+      if(doc.exists){
+        var d = doc.data();
+        plan = d.planName || d.plan || 'Starter';
+        credits = d.credits || 0;
+        if(d.name) name = d.name;
+        // Sync to localStorage
+        localStorage.setItem('paype_credits', String(credits));
+        localStorage.setItem('paype_plan', d.plan || 'starter');
+        // Update lastLogin
+        doc.ref.update({ lastLogin: new Date().toISOString() }).catch(function(){});
+      } else {
+        // Create user record if missing
+        db.collection('paype_users').doc(user.uid).set({
+          uid: user.uid,
+          name: user.displayName||'',
+          email: user.email||'',
+          phone: user.phoneNumber||'',
+          plan: localStorage.getItem('paype_plan')||'starter',
+          planName: 'Starter',
+          credits: 0,
+          paid: false,
+          status: 'active',
+          createdAt: new Date().toISOString(),
+          lastLogin: new Date().toISOString()
+        }, {merge:true}).catch(function(){});
+      }
+
+      loadUser(name, user.email||user.phoneNumber, plan, user.photoURL, credits);
+    })
+    .catch(function(){
+      // Fallback to localStorage
+      var plan2=localStorage.getItem('paype_plan')||'Starter';
+      var credits2=parseInt(localStorage.getItem('paype_credits')||'0');
+      loadUser(user.displayName||user.email||'User', user.email, plan2, user.photoURL, credits2);
+    });
+});
+
+function loadUser(name, email, plan, photo, credits){
+  credits = credits || parseInt(localStorage.getItem('paype_credits')||'0');
+  var initial=name.charAt(0).toUpperCase();
+  var planLabel=plan.charAt(0).toUpperCase()+plan.slice(1);
+  document.getElementById('smName').textContent=name;
+  document.getElementById('smPlan').textContent=planLabel+' Plan';
+  document.getElementById('smAvatar').textContent=initial;
+  document.getElementById('avatarBtn').textContent=initial;
+  // Update credits button
+  var creditsBtn = document.querySelector('.credits-btn');
+  if(creditsBtn) creditsBtn.innerHTML = '💎 ' + credits + ' Credits';
+  document.getElementById('heroPlanName').textContent=planLabel+' Plan · '+credits+' credits';
+  updateSidebarUser(name, plan, photo);
+  if(photo){
+    var img='<img src="'+photo+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>';
+    document.getElementById('smAvatar').innerHTML=img;
+    document.getElementById('avatarBtn').innerHTML=img;
+  }
+}
+
+// ── LOGOUT ────────────────────────────────────────────
+function logout(){
+  if(confirm('Sign out?')){
+    auth.signOut().then(function(){
+      localStorage.removeItem('paype_phone');
+      localStorage.removeItem('paype_login_method');
+      localStorage.removeItem('paype_plan');
+      localStorage.removeItem('paype_plan_price');
+      window.location.href='/login';
+    });
+  }
+}
+
+// ── SIDE MENU ─────────────────────────────────────────
+function openSideMenu(){
+  document.getElementById('sideMenu').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+function closeSideMenu(){
+  document.getElementById('sideMenu').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ── BUILD TYPE ────────────────────────────────────────
+var buildType='fullstack';
+function selectBuildType(btn,type){
+  buildType=type;
+  document.querySelectorAll('.btab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  var placeholders={
+    fullstack:'Build me a full stack app with user auth and dashboard...',
+    mobile:'Build me a mobile app for tracking daily expenses...',
+    landing:'Create a landing page for my SaaS product...',
+    ecommerce:'Build an e-commerce store for selling handmade jewellery...'
+  };
+  document.getElementById('promptInput').placeholder=placeholders[type]||'Describe your app idea...';
+}
+
+// ── PROMPT ────────────────────────────────────────────
+function usePrompt(text){
+  document.getElementById('promptInput').value=text;
+  document.getElementById('promptInput').focus();
+}
+var generatedCode = '';
+var selectedAIModel = 'claude';
+
+function toggleModelMenu(){
+  var menu = document.getElementById('modelMenu');
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+function selectAIModel(model){
+  selectedAIModel = model;
+  document.getElementById('modelBtn').innerHTML = '⚡ PayPe AI <span style="opacity:.5">▾</span>';
+  document.getElementById('modelMenu').style.display = 'none';
+  document.getElementById('model_claude').style.background = model==='claude' ? 'rgba(245,158,11,.08)' : '';
+  document.getElementById('model_claude').style.color = model==='claude' ? 'var(--gold)' : 'var(--text)';
+  document.getElementById('model_openai').style.background = model==='openai' ? 'rgba(245,158,11,.08)' : '';
+  document.getElementById('model_openai').style.color = model==='openai' ? 'var(--gold)' : 'var(--text)';
+}
+// Close menu when clicking outside
+document.addEventListener('click', function(e){
+  var menu = document.getElementById('modelMenu');
+  var btn = document.getElementById('modelBtn');
+  if(menu && btn && !btn.contains(e.target) && !menu.contains(e.target)){
+    menu.style.display = 'none';
+  }
+});
+
+function submitPrompt(){
+  var prompt = document.getElementById('promptInput').value.trim();
+  if(!prompt){ document.getElementById('promptInput').focus(); return; }
+
+  // Check credits
+  var credits = parseInt(localStorage.getItem('paype_credits') || '100');
+  if(credits <= 0){
+    alert('❌ No credits remaining!\n\nPlease upgrade your plan to continue building.');
+    return;
+  }
+
+  // Show loading
+  document.getElementById('aiLoading').classList.add('show');
+  updateLoadingText(buildType);
+
+  // Call AI Worker
+  fetch('https://paype-ai.doctorramesh5.workers.dev', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      prompt: prompt + (selectedAudience !== 'public' ? '\n\nTarget audience: ' + selectedAudience : ''),
+      buildType: buildType,
+      aiModel: selectedAIModel,
+      userPhone: localStorage.getItem('paype_phone') || ''
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    document.getElementById('aiLoading').classList.remove('show');
+    if(data.success && data.code){
+      generatedCode = data.code;
+      showResult(prompt, data.code);
+      // Deduct 1 credit from localStorage
+      var newCredits = Math.max(0, credits - 1);
+      localStorage.setItem('paype_credits', String(newCredits));
+      // Deduct 1 credit from Firestore
+      var user = auth.currentUser;
+      if(user && db){
+        db.collection('paype_users').doc(user.uid).update({
+          credits: firebase.firestore.FieldValue.increment(-1)
+        }).catch(function(){});
+      }
+      // Update credits display
+      var creditsBtn = document.querySelector('.credits-btn');
+      if(creditsBtn) creditsBtn.innerHTML = '💎 ' + newCredits + ' Credits';
+    } else {
+      alert('❌ AI Error: ' + (data.error || 'Something went wrong. Please try again.'));
+    }
+  })
+  .catch(function(e){
+    document.getElementById('aiLoading').classList.remove('show');
+    alert('❌ Network error. Please check your connection and try again.');
+  });
+}
+
+function updateLoadingText(type){
+  var texts = {
+    fullstack: ['🔍 Analyzing your requirements…', '⚡ Building full stack app…', '🎨 Designing the UI…', '🔧 Adding functionality…'],
+    mobile: ['📱 Optimizing for mobile…', '🎨 Creating mobile UI…', '⚡ Adding interactions…'],
+    landing: ['🎨 Designing landing page…', '✨ Adding animations…', '📝 Writing copy…'],
+    ecommerce: ['🛒 Building store…', '💳 Adding cart logic…', '🎨 Styling products…']
+  };
+  var msgs = texts[type] || texts.fullstack;
+  var i = 0;
+  var el = document.getElementById('aiLoadingMsg');
+  if(el) el.textContent = msgs[0];
+  var interval = setInterval(function(){
+    i = (i+1) % msgs.length;
+    if(el) el.textContent = msgs[i];
+    if(!document.getElementById('aiLoading').classList.contains('show')){
+      clearInterval(interval);
+    }
+  }, 1500);
+}
+
+function showResult(prompt, code){
+  document.getElementById('aiResultTitle').textContent = '✨ ' + prompt.substring(0,50) + (prompt.length>50?'…':'');
+  document.getElementById('aiResultScreen').classList.add('show');
+  // Show preview
+  var frame = document.getElementById('previewFrame');
+  var blob = new Blob([code], {type:'text/html'});
+  frame.src = URL.createObjectURL(blob);
+  // Show code
+  document.getElementById('codeView').textContent = code;
+}
+
+function closeResult(){
+  document.getElementById('aiResultScreen').classList.remove('show');
+}
+
+function switchResultTab(tab){
+  document.querySelectorAll('.rt-tab').forEach(function(t){t.classList.remove('active');});
+  event.target.classList.add('active');
+  document.getElementById('previewFrame').style.display = tab==='preview' ? 'block' : 'none';
+  document.getElementById('codeView').style.display = tab==='code' ? 'block' : 'none';
+}
+
+function downloadCode(){
+  var blob = new Blob([generatedCode], {type:'text/html'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'paype-app-' + Date.now() + '.html';
+  a.click();
+}
+
+function copyCode(){
+  navigator.clipboard.writeText(generatedCode).then(function(){
+    alert('✅ Code copied to clipboard!');
+  }).catch(function(){
+    // Fallback
+    var ta = document.createElement('textarea');
+    ta.value = generatedCode;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('✅ Code copied!');
+  });
+}
+
+// ── NOTIFICATIONS ────────────────────────────────────
+function showNotifications(){ alert('🔔 No new notifications'); }
+function showCredits(){
+  alert('💎 Buy Credits — Payment integration coming soon!');
+}
+function showSection(s){
+  if(s==='settings'||s==='projects') openSideMenu();
+}
+
+// ── ANIMATED BG (floating particles) ─────────────────
+(function(){
+  var canvas=document.getElementById('bgCanvas');
+  var ctx=canvas.getContext('2d');
+  var particles=[];
+  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+  resize();
+  window.addEventListener('resize',resize);
+  for(var i=0;i<60;i++){
+    particles.push({
+      x:Math.random()*window.innerWidth,
+      y:Math.random()*window.innerHeight,
+      r:Math.random()*1.5+0.3,
+      dx:(Math.random()-.5)*.3,
+      dy:(Math.random()-.5)*.3,
+      o:Math.random()*.4+.1
+    });
+  }
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    var theme=document.documentElement.getAttribute('data-theme');
+    var col=theme==='light'?'0,120,200':'56,189,248';
+    particles.forEach(function(p){
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle='rgba('+col+','+p.o+')';
+      ctx.fill();
+      p.x+=p.dx; p.y+=p.dy;
+      if(p.x<0||p.x>canvas.width)p.dx*=-1;
+      if(p.y<0||p.y>canvas.height)p.dy*=-1;
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ── SIDEBAR NAV ───────────────────────────────────────
+function sbNav(btn){
+  document.querySelectorAll('.sb-item').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  if(window.innerWidth<768){
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('show');
+  }
+}
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+
+// ── UPDATE SIDEBAR USER ───────────────────────────────
+function updateSidebarUser(name, plan, photo){
+  var initial=name.charAt(0).toUpperCase();
+  var planLabel=plan.charAt(0).toUpperCase()+plan.slice(1);
+  if(document.getElementById('sbAvatar')) document.getElementById('sbAvatar').textContent=initial;
+  if(document.getElementById('sbName')) document.getElementById('sbName').textContent=name;
+  if(document.getElementById('sbPlan')) document.getElementById('sbPlan').textContent=planLabel+' Plan';
+  // Update sb theme buttons
+  var t=localStorage.getItem('paype_theme')||'dark';
+  document.querySelectorAll('.sb-tbtn').forEach(function(b){b.classList.remove('active');});
+  var map={light:0,dark:1,system:2};
+  document.querySelectorAll('.sb-tbtn')[map[t]]&&document.querySelectorAll('.sb-tbtn')[map[t]].classList.add('active');
+  if(photo){
+    var img='<img src="'+photo+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>';
+    if(document.getElementById('sbAvatar')) document.getElementById('sbAvatar').innerHTML=img;
+  }
+}
+
+
+// ── AUDIENCE SELECTOR ─────────────────────────────────
+var selectedAudience = 'public';
+function toggleVisMenu(){
+  var menu=document.getElementById('visMenu');
+  if(menu) menu.style.display=menu.style.display==='none'?'block':'none';
+}
+function selectAudience(val,label){
+  selectedAudience=val;
+  var btn=document.getElementById('visBtn');
+  if(btn) btn.innerHTML=label+' <span style="opacity:.5">▾</span>';
+  var menu=document.getElementById('visMenu');
+  if(menu) menu.style.display='none';
+  ['public','student','developer','business'].forEach(function(a){
+    var el=document.getElementById('aud_'+a);
+    if(el){el.style.background=a===val?'rgba(245,158,11,.08)':'';el.style.color=a===val?'var(--gold)':'var(--text)';}
+  });
+}
+
+// ── ATTACH MENU ───────────────────────────────────────
+var attachedFiles=[];
+function toggleAttachMenu(){
+  var menu=document.getElementById('attachMenu');
+  if(menu) menu.classList.toggle('show');
+}
+function triggerFileUpload(type){
+  var menu=document.getElementById('attachMenu');
+  if(menu) menu.classList.remove('show');
+  var el=document.getElementById(type==='image'?'imageInput':'fileInput');
+  if(el) el.click();
+}
+function handleFileSelect(input,type){
+  var files=Array.from(input.files);
+  if(!files.length) return;
+  files.forEach(function(file){
+    attachedFiles.push({file:file,type:type});
+    var idx=attachedFiles.length;
+    var prev=document.getElementById('filePreview');
+    if(prev) prev.classList.add('show');
+    var item=document.createElement('div');
+    item.className='fp-item';
+    item.id='fp_'+idx;
+    if(type==='image'){
+      var reader=new FileReader();
+      reader.onload=function(e){ item.innerHTML='<img src="'+e.target.result+'" style="width:32px;height:32px;border-radius:5px;object-fit:cover"/><span>'+file.name.substring(0,20)+'</span><button class="fp-remove" onclick="removeFile('+idx+')">✕</button>'; };
+      reader.readAsDataURL(file);
+    } else {
+      item.innerHTML='<span>📄</span><span>'+file.name.substring(0,20)+'</span><button class="fp-remove" onclick="removeFile('+idx+')">✕</button>';
+    }
+    if(prev) prev.appendChild(item);
+  });
+  input.value='';
+}
+function removeFile(idx){
+  attachedFiles[idx-1]=null;
+  var item=document.getElementById('fp_'+idx);
+  if(item) item.remove();
+  var prev=document.getElementById('filePreview');
+  if(prev && !attachedFiles.filter(Boolean).length) prev.classList.remove('show');
+}
+function addProjectRef(){
+  var menu=document.getElementById('attachMenu');
+  if(menu) menu.classList.remove('show');
+  var name=prompt('Enter project name or URL to reference:');
+  if(name){
+    var ta=document.getElementById('promptInput');
+    ta.value+=(ta.value?'\n':'')+'Reference project: '+name;
+    ta.focus();
+  }
+}
+
+// ── SEARCH ────────────────────────────────────────────
+var quickPromptsList=[
+  {icon:'📄',title:'Invoice Generator',prompt:'Build an invoice generator app'},
+  {icon:'🍽️',title:'Restaurant Menu',prompt:'Create a restaurant menu app'},
+  {icon:'👥',title:'Attendance Tracker',prompt:'Build an employee attendance tracker'},
+  {icon:'📅',title:'Booking System',prompt:'Create an online booking system'},
+  {icon:'💳',title:'Payment Dashboard',prompt:'Build a payment dashboard'},
+  {icon:'🛒',title:'E-Commerce Store',prompt:'Build an online e-commerce store'},
+  {icon:'📊',title:'Analytics Dashboard',prompt:'Build an analytics dashboard'},
+  {icon:'📱',title:'Social Media App',prompt:'Build a social media app'},
+  {icon:'🎓',title:'Learning Platform',prompt:'Build an online learning platform'},
+  {icon:'🏥',title:'Hospital Management',prompt:'Build a hospital management system'}
+];
+function openSearch(){
+  var overlay=document.getElementById('searchOverlay');
+  if(overlay) overlay.classList.add('show');
+  setTimeout(function(){var inp=document.getElementById('searchInput');if(inp)inp.focus();},100);
+  doSearch('');
+}
+function closeSearch(e){
+  if(e.target===document.getElementById('searchOverlay')) closeSearchFn();
+}
+function closeSearchFn(){
+  var overlay=document.getElementById('searchOverlay');
+  if(overlay) overlay.classList.remove('show');
+  var inp=document.getElementById('searchInput');
+  if(inp) inp.value='';
+}
+function doSearch(q){
+  var results=document.getElementById('searchResults');
+  if(!results) return;
+  var filtered=q?quickPromptsList.filter(function(p){return p.title.toLowerCase().includes(q.toLowerCase())||p.prompt.toLowerCase().includes(q.toLowerCase());}):quickPromptsList;
+  if(!filtered.length){results.innerHTML='<div style="text-align:center;padding:28px;color:var(--muted);font-size:.85rem">No results for "'+q+'"</div>';return;}
+  var html = '';
+  filtered.forEach(function(p, idx){
+    html += '<div onclick="usePromptFromSearch(' + idx + ')" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:9px;cursor:pointer" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'"><div style="width:32px;height:32px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center">' + p.icon + '</div><div><div style="font-size:.85rem;font-weight:600">' + p.title + '</div><div style="font-size:.73rem;color:var(--muted)">' + p.prompt + '</div></div></div>';
+  });
+  results.innerHTML = html;
+  window._searchFiltered = filtered;
+}
+function usePromptFromSearch(idx){
+  var item = window._searchFiltered ? window._searchFiltered[idx] : null;
+  if(!item) return;
+  document.getElementById('promptInput').value=item.prompt;
+  closeSearchFn();
+  document.getElementById('promptInput').focus();
+}
+
+// ── SETTINGS PANEL ────────────────────────────────────
+function openSettings(){
+  var panel=document.getElementById('settingsPanel');
+  if(panel) panel.classList.add('show');
+  var credits=parseInt(localStorage.getItem('paype_credits')||'0');
+  var plan=localStorage.getItem('paype_plan')||'starter';
+  var planNames={starter:'Starter',pro:'Pro',enterprise:'Enterprise'};
+  var maxCredits={starter:100,pro:500,enterprise:2000};
+  var pn=document.getElementById('settingsPlanName');
+  var sc=document.getElementById('settingsCredits');
+  var cb=document.getElementById('creditsBar');
+  if(pn) pn.textContent=(planNames[plan]||'Starter')+' Plan';
+  if(sc) sc.textContent=credits+' Credits';
+  if(cb) cb.style.width=Math.min(100,(credits/(maxCredits[plan]||100))*100)+'%';
+}
+function closeSettings(){
+  var panel=document.getElementById('settingsPanel');
+  if(panel) panel.classList.remove('show');
+}
+function closeSettingsPanel(e){
+  if(e.target===document.getElementById('settingsPanel')) closeSettings();
+}
+
+// ── VOICE INPUT ────────────────────────────────────────
+var mediaRecorder=null;
+var isRecording=false;
+function toggleVoice(){
+  if(isRecording){stopVoice();return;}
+  startVoice();
+}
+function startVoice(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){alert('Voice not supported in this browser.');return;}
+  navigator.mediaDevices.getUserMedia({audio:true})
+    .then(function(stream){
+      isRecording=true;
+      var btn=document.getElementById('voiceBtn');
+      if(btn){btn.textContent='🔴';btn.classList.add('voice-recording');}
+      var chunks=[];
+      mediaRecorder=new MediaRecorder(stream);
+      mediaRecorder.ondataavailable=function(e){chunks.push(e.data);};
+      mediaRecorder.onstop=function(){
+        isRecording=false;
+        var btn2=document.getElementById('voiceBtn');
+        if(btn2){btn2.textContent='🎤';btn2.classList.remove('voice-recording');}
+        stream.getTracks().forEach(function(t){t.stop();});
+        alert('🎤 Voice recorded! Speech-to-text transcription requires additional setup.');
+      };
+      mediaRecorder.start();
+      setTimeout(function(){if(isRecording)stopVoice();},60000);
+    })
+    .catch(function(){alert('Microphone access denied.');});
+}
+function stopVoice(){
+  if(mediaRecorder&&mediaRecorder.state!=='inactive') mediaRecorder.stop();
+}
+
+// ── KEYBOARD SHORTCUTS ────────────────────────────────
+document.addEventListener('keydown',function(e){
+  if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openSearch();}
+  if(e.key==='Escape'){closeSearchFn();closeSettings();}
+});
+
+// ── CLOSE MENUS ON OUTSIDE CLICK ──────────────────────
+document.addEventListener('click',function(e){
+  var visMenu=document.getElementById('visMenu');
+  var visBtn=document.getElementById('visBtn');
+  if(visMenu&&visBtn&&!visBtn.contains(e.target)&&!visMenu.contains(e.target)) visMenu.style.display='none';
+  var attachMenu=document.getElementById('attachMenu');
+  var attachBtn=document.getElementById('attachBtn');
+  if(attachMenu&&attachBtn&&!attachBtn.contains(e.target)&&!attachMenu.contains(e.target)) attachMenu.classList.remove('show');
+  var modelMenu=document.getElementById('modelMenu');
+  var modelBtn=document.getElementById('modelBtn');
+  if(modelMenu&&modelBtn&&!modelBtn.contains(e.target)&&!modelMenu.contains(e.target)) modelMenu.style.display='none';
+});
+
+</script>
+
+<!-- ── AI LOADING ── -->
+<div id="aiLoading">
+  <div class="ai-spinner"></div>
+  <div class="ai-loading-text">Building your app…</div>
+  <div class="ai-loading-sub" id="aiLoadingMsg">Analyzing your requirements…</div>
+  <div class="ai-progress"><div class="ai-progress-bar"></div></div>
+  <div style="margin-top:16px;color:var(--muted);font-size:.75rem">Powered by Claude AI · Usually takes 15-30 seconds</div>
+</div>
+
+<!-- ── AI RESULT SCREEN ── -->
+<div id="aiResultScreen">
+  <div class="result-topbar">
+    <h3>⚡ <span id="aiResultTitle">Your App</span></h3>
+    <div class="result-actions">
+      <button class="ra-btn" onclick="copyCode()">📋 Copy Code</button>
+      <button class="ra-btn" onclick="downloadCode()">⬇️ Download</button>
+      <button class="ra-btn primary" onclick="closeResult()">✕ Close</button>
+    </div>
+  </div>
+  <div class="result-tabs">
+    <button class="rt-tab active" onclick="switchResultTab('preview')">👁️ Preview</button>
+    <button class="rt-tab" onclick="switchResultTab('code')">💻 Code</button>
+  </div>
+  <div class="result-body">
+    <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin"></iframe>
+    <pre id="codeView"></pre>
+  </div>
+</div>
+
+
+<!-- ── SEARCH OVERLAY ── -->
+<div class="search-overlay" id="searchOverlay" onclick="closeSearch(event)">
+  <div class="search-box">
+    <div class="search-input-wrap">
+      <span style="font-size:1.1rem">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search projects, templates, prompts…" oninput="doSearch(this.value)" onkeydown="if(event.key==='Escape')closeSearchFn()"/>
+      <button class="search-close" onclick="closeSearchFn()">✕</button>
+    </div>
+    <div id="searchResults" style="padding:8px">
+      <div class="search-empty">Start typing to search…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SETTINGS PANEL ── -->
+<div class="settings-panel" id="settingsPanel" onclick="closeSettingsPanel(event)">
+  <div class="settings-box">
+    <div class="sp-header">
+      <h3>⚙️ Settings</h3>
+      <button class="sp-close" onclick="closeSettings()">✕</button>
+    </div>
+
+    <div class="sp-section">
+      <h4>🎨 Appearance</h4>
+      <div class="sp-row">
+        <div><div class="sp-label">Theme</div><div class="sp-desc">Choose your preferred theme</div></div>
+        <select class="sp-select" onchange="setTheme(this.value)">
+          <option value="dark">🌙 Dark</option>
+          <option value="light">☀️ Light</option>
+          <option value="system">💻 System</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="sp-section">
+      <h4>🤖 AI Builder</h4>
+      <div class="sp-row">
+        <div><div class="sp-label">Default AI Model</div><div class="sp-desc">Which AI to use by default</div></div>
+        <select class="sp-select" id="defaultModelSelect" onchange="selectAIModel(this.value)">
+          <option value="claude">⚡ PayPe Coding (Claude)</option>
+          <option value="openai">💬 PayPe Chat (ChatGPT)</option>
+        </select>
+      </div>
+      <div class="sp-row">
+        <div><div class="sp-label">Auto-save Projects</div><div class="sp-desc">Save generated apps automatically</div></div>
+        <button class="sp-toggle on" onclick="this.classList.toggle('on')"></button>
+      </div>
+      <div class="sp-row">
+        <div><div class="sp-label">Show Token Usage</div><div class="sp-desc">Display AI token count</div></div>
+        <button class="sp-toggle" onclick="this.classList.toggle('on')"></button>
+      </div>
+    </div>
+
+    <div class="sp-section">
+      <h4>🔔 Notifications</h4>
+      <div class="sp-row">
+        <div><div class="sp-label">Build Complete</div><div class="sp-desc">Notify when AI finishes building</div></div>
+        <button class="sp-toggle on" onclick="this.classList.toggle('on')"></button>
+      </div>
+      <div class="sp-row">
+        <div><div class="sp-label">Credit Alerts</div><div class="sp-desc">Warn when credits are low</div></div>
+        <button class="sp-toggle on" onclick="this.classList.toggle('on')"></button>
+      </div>
+    </div>
+
+    <div class="sp-section">
+      <h4>💎 Plan & Credits</h4>
+      <div style="background:var(--bg3);border-radius:10px;padding:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:.85rem;font-weight:600" id="settingsPlanName">Starter Plan</span>
+          <span style="font-size:.85rem;color:var(--gold);font-weight:700" id="settingsCredits">0 Credits</span>
+        </div>
+        <div style="height:6px;background:var(--border);border-radius:100px;overflow:hidden">
+          <div id="creditsBar" style="height:100%;background:linear-gradient(90deg,var(--gold),var(--red));border-radius:100px;width:50%;transition:width .5s"></div>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:6px">1 credit = 1 AI app build</div>
+      </div>
+    </div>
+
+    <div class="sp-section">
+      <button onclick="logout();closeSettings();" style="width:100%;padding:11px;border-radius:10px;background:transparent;border:1px solid rgba(239,68,68,.3);color:var(--red);font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">🚪 Sign Out</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PayPe Technologies – Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root[data-theme="dark"]{--bg:#08080f;--bg2:#0f0f1a;--bg3:#14141f;--border:#1e1e30;--text:#e2e2f0;--muted:#6b6b8a;--gold:#f59e0b;--red:#ef4444;--green:#22c55e;--card:rgba(15,15,26,0.97);--shadow:0 25px 60px rgba(0,0,0,.6)}
+:root[data-theme="light"]{--bg:#f0f0f8;--bg2:#fff;--bg3:#eaeaf5;--border:#d0d0e0;--text:#1a1a2e;--muted:#6b6b8a;--gold:#d97706;--red:#dc2626;--green:#16a34a;--card:rgba(255,255,255,0.98);--shadow:0 25px 60px rgba(0,0,0,.12)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden;transition:background .3s,color .3s}
+.orbs{position:fixed;inset:0;pointer-events:none;z-index:0}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.25;animation:float 8s ease-in-out infinite}
+.o1{width:400px;height:400px;background:radial-gradient(var(--gold),transparent);top:-100px;left:-100px}
+.o2{width:300px;height:300px;background:radial-gradient(var(--red),transparent);bottom:-80px;right:-80px;animation-delay:3s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+.theme-bar{position:fixed;top:16px;right:16px;display:flex;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:100px;padding:5px 8px;z-index:100;backdrop-filter:blur(20px)}
+.tbtn{width:28px;height:28px;border-radius:50%;border:none;cursor:pointer;background:transparent;color:var(--muted);font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.tbtn.active{background:linear-gradient(135deg,var(--gold),var(--red));color:#000}
+.card{width:100%;max-width:450px;background:var(--card);border:1px solid var(--border);border-radius:24px;padding:36px;position:relative;z-index:10;backdrop-filter:blur(20px);box-shadow:var(--shadow);animation:up .4s ease;max-height:95vh;overflow-y:auto}
+@keyframes up{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:24px}
+.li{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--red));display:flex;align-items:center;justify-content:center;color:#000;font-weight:900;font-size:1.1rem;font-family:'Playfair Display',serif}
+.lt{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900}.lt span{color:var(--gold)}
+h2{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;text-align:center;margin-bottom:4px}
+.sub{text-align:center;color:var(--muted);font-size:.85rem;margin-bottom:22px}
+.tabs{display:flex;background:var(--bg3);border-radius:11px;padding:3px;margin-bottom:20px;gap:3px}
+.tab{flex:1;padding:8px 4px;text-align:center;font-size:.78rem;font-weight:600;cursor:pointer;border-radius:9px;color:var(--muted);transition:all .2s;border:none;background:transparent;font-family:'DM Sans',sans-serif}
+.tab.active{background:linear-gradient(135deg,var(--gold),var(--red));color:#000}
+.social-row{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:16px}
+.sbtn{padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:.8rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s;font-family:'DM Sans',sans-serif}
+.sbtn:hover{border-color:var(--gold)}
+.div{display:flex;align-items:center;gap:10px;margin:12px 0}
+.div::before,.div::after{content:'';flex:1;height:1px;background:var(--border)}
+.div span{color:var(--muted);font-size:.72rem}
+.ig{margin-bottom:12px}
+.ig label{display:block;font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.pr{display:flex;gap:7px}
+.pfx{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 12px;color:var(--gold);font-weight:700;font-size:.85rem;display:flex;align-items:center;white-space:nowrap}
+input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-size:.88rem;outline:none;transition:border .2s;font-family:'DM Sans',sans-serif}
+input:focus{border-color:rgba(245,158,11,.5)}
+.otp-row{display:flex;gap:7px;justify-content:center;margin:8px 0}
+.otp-row input{width:42px;height:48px;text-align:center;font-size:1.2rem;font-weight:700;padding:0;flex:0 0 42px}
+.btn{width:100%;padding:12px;border-radius:11px;font-weight:700;font-size:.9rem;cursor:pointer;border:none;transition:all .2s;font-family:'DM Sans',sans-serif;margin-top:4px}
+.bp{background:linear-gradient(135deg,var(--gold),var(--red));color:#000}
+.bp:hover{opacity:.9;transform:translateY(-1px)}
+.bs{background:var(--bg3);border:1px solid var(--border);color:var(--text);margin-top:7px}
+.bs:hover{border-color:var(--gold);color:var(--gold)}
+.err{font-size:.79rem;margin-top:7px;text-align:center;min-height:16px}
+.err.red{color:var(--red)}.err.grn{color:var(--green)}
+.fgt{text-align:right;margin:-6px 0 10px;font-size:.78rem;color:var(--gold);cursor:pointer}
+.stp{display:none}.stp.active{display:block}
+.bk{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:.8rem;cursor:pointer;margin-bottom:14px;background:none;border:none;font-family:'DM Sans',sans-serif}
+.bk:hover{color:var(--text)}
+.pdis{text-align:center;color:var(--muted);font-size:.83rem;margin-bottom:14px}
+.pdis strong{color:var(--text)}
+.rsnd{text-align:center;margin-top:10px;font-size:.78rem;color:var(--muted)}
+.rsnd span{color:var(--gold);cursor:pointer;font-weight:600}
+.alink{text-align:center;margin-top:16px;font-size:.78rem;color:var(--muted)}
+.alink a{color:var(--gold);font-weight:600;text-decoration:none}
+.toggle-link{text-align:center;margin-top:12px;font-size:.8rem;color:var(--muted)}
+.toggle-link span{color:var(--gold);cursor:pointer;font-weight:600}
+
+
+/* ── PAYMENT SCREEN ── */
+#paymentScreen{display:none;position:fixed;inset:0;z-index:300;background:var(--bg);overflow-y:auto;padding:40px 20px}
+.pay-wrap{max-width:480px;margin:0 auto}
+.pay-back{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:.82rem;cursor:pointer;margin-bottom:24px;background:none;border:none;font-family:'DM Sans',sans-serif}
+.pay-back:hover{color:var(--text)}
+.pay-header{text-align:center;margin-bottom:28px}
+.pay-header h2{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;margin-bottom:6px}
+.pay-header p{color:var(--muted);font-size:.85rem}
+.pay-plan-summary{background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(239,68,68,.06));border:1px solid rgba(245,158,11,.25);border-radius:16px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between}
+.pps-left .pps-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:var(--gold)}
+.pps-left .pps-desc{font-size:.8rem;color:var(--muted);margin-top:3px}
+.pps-right .pps-price{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;color:var(--gold)}
+.pps-right .pps-period{font-size:.75rem;color:var(--muted)}
+.pay-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px}
+.pay-card h3{font-size:.88rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.pf{margin-bottom:14px}
+.pf label{display:block;font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.pf input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-size:.88rem;outline:none;transition:border .2s;font-family:'DM Sans',sans-serif}
+.pf input:focus{border-color:rgba(245,158,11,.5)}
+.pf-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pay-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.pm{padding:10px 6px;border-radius:10px;border:2px solid var(--border);text-align:center;cursor:pointer;transition:all .2s;font-size:.75rem;font-weight:600;color:var(--muted)}
+.pm:hover{border-color:rgba(245,158,11,.3)}
+.pm.active{border-color:var(--gold);background:rgba(245,158,11,.08);color:var(--gold)}
+.pm .pm-icon{font-size:1.3rem;display:block;margin-bottom:4px}
+.pay-secure{display:flex;align-items:center;justify-content:center;gap:6px;font-size:.73rem;color:var(--muted);margin-bottom:16px}
+.pay-btn{width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--red));color:#000;font-weight:800;font-size:1rem;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.pay-btn:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 8px 24px rgba(245,158,11,.3)}
+.pay-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.pay-divider{display:flex;align-items:center;gap:10px;margin:12px 0}
+.pay-divider::before,.pay-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.pay-divider span{color:var(--muted);font-size:.72rem}
+.rzp-btn{width:100%;padding:13px;border-radius:12px;background:#3395FF;color:#fff;font-weight:700;font-size:.92rem;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.rzp-btn:hover{opacity:.9}
+.pay-trial{text-align:center;margin-top:12px;font-size:.75rem;color:var(--muted)}
+.pay-err{color:var(--red);font-size:.8rem;text-align:center;margin-top:8px;min-height:16px}
+
+/* ── PLAN SELECTION ── */
+#planScreen{display:none;position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto;padding:40px 20px}
+.plan-wrap{max-width:900px;margin:0 auto}
+.plan-header{text-align:center;margin-bottom:40px}
+.plan-header h2{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;margin-bottom:8px}
+.plan-header h2 span{background:linear-gradient(135deg,var(--gold),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.plan-header p{color:var(--muted);font-size:.9rem}
+.plan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-bottom:32px}
+.plan-card{background:var(--card);border:2px solid var(--border);border-radius:20px;padding:28px;cursor:pointer;transition:all .3s;position:relative;text-align:center}
+.plan-card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(0,0,0,.3)}
+.plan-card.selected{border-color:var(--gold);background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(239,68,68,.04))}
+.plan-card.popular{border-color:rgba(245,158,11,.4)}
+.popular-tag{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),var(--red));color:#000;font-size:.7rem;font-weight:800;padding:4px 14px;border-radius:100px;white-space:nowrap}
+.plan-name{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;margin-bottom:4px}
+.plan-price{font-size:2.2rem;font-weight:900;color:var(--gold);margin:12px 0 4px;font-family:'Playfair Display',serif}
+.plan-price sup{font-size:1rem}
+.plan-price span{font-size:.85rem;color:var(--muted);font-weight:400;font-family:'DM Sans',sans-serif}
+.plan-desc{color:var(--muted);font-size:.8rem;margin-bottom:16px}
+.plan-features{list-style:none;text-align:left;margin-bottom:20px}
+.plan-features li{font-size:.82rem;padding:5px 0;display:flex;align-items:center;gap:8px;color:var(--text);border-bottom:1px solid var(--border)}
+.plan-features li:last-child{border-bottom:none}
+.plan-features li::before{content:'✓';color:var(--gold);font-weight:700;flex-shrink:0}
+.plan-select-btn{width:100%;padding:12px;border-radius:11px;font-weight:700;font-size:.88rem;cursor:pointer;border:2px solid var(--border);background:transparent;color:var(--text);font-family:'DM Sans',sans-serif;transition:all .2s}
+.plan-card.selected .plan-select-btn,.plan-select-btn:hover{background:linear-gradient(135deg,var(--gold),var(--red));color:#000;border-color:transparent}
+.plan-continue-btn{width:100%;max-width:400px;margin:0 auto;display:block;padding:14px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--red));color:#000;font-weight:700;font-size:1rem;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.plan-continue-btn:hover{opacity:.9;transform:translateY(-2px)}
+.plan-continue-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.plan-user-info{text-align:center;margin-bottom:28px;padding:14px 20px;background:var(--card);border:1px solid var(--border);border-radius:12px;max-width:400px;margin:0 auto 28px}
+.plan-user-info .pui-name{font-weight:700;font-size:.95rem;margin-bottom:2px}
+.plan-user-info .pui-email{font-size:.8rem;color:var(--muted)}
+</style>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@9.22.2/firebase-app-compat.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@9.22.2/firebase-auth-compat.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@9.22.2/firebase-firestore-compat.min.js"></script>
+</head>
+<body>
+<div class="orbs"><div class="orb o1"></div><div class="orb o2"></div></div>
+
+<!-- THEME -->
+<div class="theme-bar">
+  <button class="tbtn" onclick="setTheme('light')" title="Light">☀️</button>
+  <button class="tbtn active" onclick="setTheme('dark')" title="Dark">🌙</button>
+  <button class="tbtn" onclick="setTheme('system')" title="System">💻</button>
+</div>
+
+<div class="card">
+  <div class="logo"><div class="li">P</div><div class="lt">PayPe <span>Technologies</span></div></div>
+  <h2 id="cardTitle">Welcome Back</h2>
+  <p class="sub" id="cardSub">Sign in to your account</p>
+
+  <!-- MAIN TABS: Login / Register -->
+  <div class="tabs">
+    <button class="tab active" id="tabLogin" onclick="switchMainTab('login')">Sign In</button>
+    <button class="tab" id="tabRegister" onclick="switchMainTab('register')">Create Account</button>
+  </div>
+
+  <!-- ════ LOGIN SECTION ════ -->
+  <div id="loginSection">
+    <!-- Method tabs -->
+    <div class="tabs" style="margin-bottom:16px">
+      <button class="tab active" id="mTabEmail" onclick="switchMethod('email')">Email</button>
+      <button class="tab" id="mTabPhone" onclick="switchMethod('phone')">📱 Mobile OTP</button>
+    </div>
+
+    <!-- EMAIL LOGIN -->
+    <div id="emailLogin">
+      <div class="social-row">
+        <button class="sbtn" onclick="googleLogin()">
+          <svg width="15" height="15" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.2 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.8 6C12.4 13 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.5 2.8-2.2 5.2-4.7 6.8l7.3 5.7c4.3-4 6.8-9.9 6.8-16.5z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.7-4.7l-7.8-6A23.9 23.9 0 0 0 0 24c0 3.9.9 7.5 2.7 10.7l7.8-6z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.3-5.7c-2 1.4-4.6 2.2-7.9 2.2-6.2 0-11.5-4.2-13.4-9.8l-7.8 6C6.6 42.6 14.6 48 24 48z"/></svg>
+          Google
+        </button>
+
+      </div>
+      <div class="div"><span>or sign in with email</span></div>
+      <div class="ig"><label>Email</label><input type="email" id="loginEmail" placeholder="you@example.com"/></div>
+      <div class="ig"><label>Password</label><input type="password" id="loginPass" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="fgt" onclick="showForgot()">Forgot password?</div>
+      <div class="err red" id="loginErr"></div>
+      <button class="btn bp" onclick="doLogin()">Sign In →</button>
+
+      <!-- Forgot Password (hidden by default) -->
+      <div id="forgotSection" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+        <div class="ig"><label>Enter your email to reset</label><input type="email" id="resetEmail" placeholder="you@example.com"/></div>
+        <div class="err" id="resetErr"></div>
+        <button class="btn bp" onclick="sendReset()">Send Reset Email →</button>
+        <button class="btn bs" onclick="hideForgot()">← Back to Login</button>
+      </div>
+    </div>
+
+    <!-- PHONE OTP LOGIN -->
+    <div id="phoneLogin" style="display:none">
+      <!-- Step 1 -->
+      <div class="stp active" id="pStep1">
+        <div class="social-row">
+          <button class="sbtn" onclick="googleLogin()">
+            <svg width="15" height="15" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.2 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.8 6C12.4 13 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.5 2.8-2.2 5.2-4.7 6.8l7.3 5.7c4.3-4 6.8-9.9 6.8-16.5z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.7-4.7l-7.8-6A23.9 23.9 0 0 0 0 24c0 3.9.9 7.5 2.7 10.7l7.8-6z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.3-5.7c-2 1.4-4.6 2.2-7.9 2.2-6.2 0-11.5-4.2-13.4-9.8l-7.8 6C6.6 42.6 14.6 48 24 48z"/></svg>
+            Google
+          </button>
+        </div>
+        <div class="div"><span>or sign in with mobile OTP</span></div>
+        <div class="ig"><label>Mobile Number</label>
+          <div class="pr"><div class="pfx">🇮🇳 +91</div><input type="tel" id="loginPhone" placeholder="98765 43210" maxlength="10" style="flex:1"/></div>
+        </div>
+        
+        <div class="err red" id="pErr1"></div>
+        <button class="btn bp" id="sendOtpBtn" onclick="sendLoginOTP()">Send OTP →</button>
+      </div>
+      <!-- Step 2 -->
+      <div class="stp" id="pStep2">
+        <button class="bk" onclick="showPStep(1)">← Change Number</button>
+        <div class="pdis">OTP sent to <strong id="phoneDisp"></strong></div>
+        <label style="display:block;font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;text-align:center">Enter 6-digit OTP</label>
+        <div class="otp-row">
+          <input type="tel" maxlength="1" class="lotp" oninput="otpNav(this,0)"/>
+          <input type="tel" maxlength="1" class="lotp" oninput="otpNav(this,1)"/>
+          <input type="tel" maxlength="1" class="lotp" oninput="otpNav(this,2)"/>
+          <input type="tel" maxlength="1" class="lotp" oninput="otpNav(this,3)"/>
+          <input type="tel" maxlength="1" class="lotp" oninput="otpNav(this,4)"/>
+          <input type="tel" maxlength="1" class="lotp" oninput="otpNav(this,5)"/>
+        </div>
+        <div class="err red" id="pErr2"></div>
+        <button class="btn bp" onclick="verifyLoginOTP()">Verify & Sign In →</button>
+        <div class="rsnd">Didn't receive? <span id="rsndBtn" onclick="resendLoginOTP()">Resend OTP</span> <span id="rsndTimer"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ REGISTER SECTION ════ -->
+  <div id="registerSection" style="display:none">
+    <!-- Step 1: Details -->
+    <div class="stp active" id="rStep1">
+      <div class="social-row">
+        <button class="sbtn" onclick="googleLogin()">
+          <svg width="15" height="15" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.2 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.8 6C12.4 13 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.5 2.8-2.2 5.2-4.7 6.8l7.3 5.7c4.3-4 6.8-9.9 6.8-16.5z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.7-4.7l-7.8-6A23.9 23.9 0 0 0 0 24c0 3.9.9 7.5 2.7 10.7l7.8-6z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.3-5.7c-2 1.4-4.6 2.2-7.9 2.2-6.2 0-11.5-4.2-13.4-9.8l-7.8 6C6.6 42.6 14.6 48 24 48z"/></svg>
+          Google
+        </button>
+
+      </div>
+      <div class="div"><span>or create with email</span></div>
+      <div class="ig"><label>Full Name</label><input type="text" id="regName" placeholder="Your full name"/></div>
+      <div class="ig"><label>Email</label><input type="email" id="regEmail" placeholder="you@example.com"/></div>
+      <div class="ig"><label>Mobile Number</label>
+        <div class="pr"><div class="pfx">🇮🇳 +91</div><input type="tel" id="regPhone" placeholder="98765 43210" maxlength="10" style="flex:1"/></div>
+      </div>
+      <div class="ig"><label>Password</label><input type="password" id="regPass" placeholder="Min 8 characters"/></div>
+      <div class="err red" id="regErr1"></div>
+      <button class="btn bp" onclick="regNext()">Continue →</button>
+    </div>
+
+    <!-- Step 2: Verify Mobile OTP -->
+    <div class="stp" id="rStep2">
+      <button class="bk" onclick="showRStep(1)">← Back</button>
+      <div class="pdis">Verify your mobile number<br/><strong id="regPhoneDisp"></strong></div>
+      <div style="display:flex;gap:7px;margin-bottom:12px">
+        <button onclick="sendRegOTP()" id="sendRegOtpBtn" style="flex:1;padding:10px;border-radius:9px;background:linear-gradient(135deg,var(--gold),var(--red));color:#000;font-weight:700;font-size:.82rem;border:none;cursor:pointer;font-family:'DM Sans',sans-serif">Send OTP</button>
+      </div>
+      <div id="regOtpBox" style="display:none">
+        <label style="display:block;font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;text-align:center">Enter 6-digit OTP</label>
+        <div class="otp-row">
+          <input type="tel" maxlength="1" class="rotp" oninput="otpNav2(this,0)"/>
+          <input type="tel" maxlength="1" class="rotp" oninput="otpNav2(this,1)"/>
+          <input type="tel" maxlength="1" class="rotp" oninput="otpNav2(this,2)"/>
+          <input type="tel" maxlength="1" class="rotp" oninput="otpNav2(this,3)"/>
+          <input type="tel" maxlength="1" class="rotp" oninput="otpNav2(this,4)"/>
+          <input type="tel" maxlength="1" class="rotp" oninput="otpNav2(this,5)"/>
+        </div>
+      </div>
+      <div class="err" id="regErr2"></div>
+      <button class="btn bp" id="createAccBtn" onclick="createAccount()" style="margin-top:8px">Create Account →</button>
+    </div>
+
+    <!-- Step 3: Success -->
+    <div class="stp" id="rStep3" style="text-align:center;padding:20px 0">
+      <div style="font-size:3rem;margin-bottom:14px">🎉</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:8px">Account Created!</h3>
+      <p style="color:var(--muted);font-size:.85rem">Taking you to your dashboard…</p>
+      <div style="margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--gold)">
+        <div style="width:16px;height:16px;border:2px solid var(--gold);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></div>
+        Redirecting…
+      </div>
+      @keyframes spin{to{transform:rotate(360deg)}}
+    </div>
+  </div>
+
+  <div class="alink">Admin? <a href="/admin">Admin Panel →</a></div>
+</div>
+
+<script>
+// ── FIREBASE CONFIG ───────────────────────────────────
+var FB_CONFIG = {
+  apiKey: "AIzaSyAQ1Cchvt21GIVJIYHXBjBX7nI52tT6Zdc",
+  authDomain: "paype-technologies.firebaseapp.com",
+  projectId: "paype-technologies",
+  storageBucket: "paype-technologies.appspot.com",
+  messagingSenderId: "4797605407",
+  appId: "1:4797605407:web:9f4fd2564939bacc8e172a"
+};
+
+// ── GLOBALS ───────────────────────────────────────────
+var auth = null;
+var db = null;
+var selectedPlan = null;
+
+// ── FIREBASE INIT (load SDKs from head tags) ──────────
+window.addEventListener('load', function() {
+  firebase.initializeApp(FB_CONFIG);
+  auth = firebase.auth();
+  db   = firebase.firestore();
+
+  // If user already logged in → check Firestore and route
+  auth.onAuthStateChanged(function(user) {
+    if (user) { checkAndRoute(user, null); }
+  });
+});
+
+// ── THEME ─────────────────────────────────────────────
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('paype_theme', t);
+  document.querySelectorAll('.tbtn').forEach(function(b){ b.classList.remove('active'); });
+  var idx = {light:0, dark:1, system:2}[t];
+  if (document.querySelectorAll('.tbtn')[idx]) document.querySelectorAll('.tbtn')[idx].classList.add('active');
+}
+setTheme(localStorage.getItem('paype_theme') || 'dark');
+
+// ── TAB SWITCH ────────────────────────────────────────
+function switchMainTab(t) {
+  document.getElementById('loginSection').style.display   = t==='login'    ? 'block' : 'none';
+  document.getElementById('registerSection').style.display= t==='register' ? 'block' : 'none';
+  document.getElementById('tabLogin').classList.toggle('active',    t==='login');
+  document.getElementById('tabRegister').classList.toggle('active', t==='register');
+  document.getElementById('cardTitle').textContent = t==='login' ? 'Welcome Back' : 'Create Account';
+  document.getElementById('cardSub').textContent   = t==='login' ? 'Sign in to your account' : 'Join PayPe Technologies today';
+}
+function switchMethod(m) {
+  document.getElementById('emailLogin').style.display = m==='email' ? 'block' : 'none';
+  document.getElementById('phoneLogin').style.display = m==='phone' ? 'block' : 'none';
+  document.getElementById('mTabEmail').classList.toggle('active', m==='email');
+  document.getElementById('mTabPhone').classList.toggle('active', m==='phone');
+}
+function showPStep(n) {
+  document.querySelectorAll('#phoneLogin .stp').forEach(function(s){s.classList.remove('active');});
+  document.getElementById('pStep'+n).classList.add('active');
+}
+function showRStep(n) {
+  document.querySelectorAll('#registerSection .stp').forEach(function(s){s.classList.remove('active');});
+  document.getElementById('rStep'+n).classList.add('active');
+}
+function showForgot(){ document.getElementById('forgotSection').style.display='block'; }
+function hideForgot(){ document.getElementById('forgotSection').style.display='none'; }
+
+// ── CHECK & ROUTE (single source of truth) ────────────
+function checkAndRoute(user, phone) {
+  console.log('checkAndRoute called', user ? user.uid : 'no uid', 'phone:', phone);
+  if (!db) {
+    console.log('db not ready - going to app');
+    window.location.href = '/app'; return;
+  }
+
+  function route(d) {
+    console.log('Firestore data:', JSON.stringify(d));
+    // Route to app if: has credits > 0 OR paid=true
+    if (d && (d.credits > 0 || d.paid === true)) {
+      console.log('User has credits/paid - going to /app');
+      localStorage.setItem('paype_paid',    'true');
+      localStorage.setItem('paype_plan',    d.plan || 'starter');
+      localStorage.setItem('paype_credits', String(d.credits || 0));
+      // Also fix paid flag in Firestore if credits exist but paid=false
+      if (d.credits > 0 && !d.paid && user && user.uid) {
+        db.collection('paype_users').doc(user.uid).update({ paid: true }).catch(function(){});
+      }
+      window.location.href = '/app';
+    } else {
+      console.log('No credits and not paid - showing plan screen');
+      localStorage.removeItem('paype_paid');
+      showPlanScreen(user);
+    }
+  }
+
+  if (user && user.uid) {
+    console.log('Looking up by UID:', user.uid);
+    db.collection('paype_users').doc(user.uid).get()
+      .then(function(doc){
+        console.log('Doc exists:', doc.exists);
+        route(doc.exists ? doc.data() : null);
+      })
+      .catch(function(e){
+        console.error('Firestore read FAILED:', e.message, e.code);
+        // Don't redirect on error - show plan screen to be safe
+        showPlanScreen(user);
+      });
+  } else if (phone) {
+    console.log('Looking up by phone:', phone);
+    db.collection('paype_users').where('phone','==',phone).limit(1).get()
+      .then(function(snap){
+        console.log('Phone snap size:', snap.size);
+        route(!snap.empty ? snap.docs[0].data() : null);
+      })
+      .catch(function(e){
+        console.error('Phone Firestore read FAILED:', e.message);
+        showPlanScreen(user);
+      });
+  } else {
+    console.log('No uid or phone - showing plan screen');
+    showPlanScreen(user);
+  }
+}
+
+// ── EMAIL LOGIN ───────────────────────────────────────
+function doLogin() {
+  if (!auth) { alert('Loading... please wait a moment and try again.'); return; }
+  var email = document.getElementById('loginEmail').value.trim();
+  var pass  = document.getElementById('loginPass').value;
+  var err   = document.getElementById('loginErr');
+  if (!email || !pass) { err.textContent = 'Enter email and password.'; return; }
+  err.textContent = 'Signing in…';
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(function(r){ checkAndRoute(r.user, null); })
+    .catch(function(e){
+      if (e.code==='auth/user-not-found')      err.textContent = 'No account found. Please register.';
+      else if (e.code==='auth/wrong-password' || e.code==='auth/invalid-credential') err.textContent = 'Incorrect password.';
+      else err.textContent = 'Login failed: ' + e.message;
+    });
+}
+
+// ── FORGOT PASSWORD ───────────────────────────────────
+function sendReset() {
+  var email = document.getElementById('resetEmail').value.trim();
+  var err   = document.getElementById('resetErr');
+  if (!email) { err.className='err red'; err.textContent='Enter your email.'; return; }
+  auth.sendPasswordResetEmail(email)
+    .then(function(){ err.className='err grn'; err.textContent='✓ Reset email sent!'; })
+    .catch(function(){ err.className='err red'; err.textContent='Email not found.'; });
+}
+
+// ── GOOGLE LOGIN ──────────────────────────────────────
+function googleLogin() {
+  if (!auth) { alert('Loading... please try again.'); return; }
+  var provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider)
+    .then(function(r){ if(r.user) checkAndRoute(r.user, null); })
+    .catch(function(e){
+      if (e.code==='auth/popup-blocked') auth.signInWithRedirect(provider);
+    });
+}
+
+// ── PHONE OTP LOGIN ───────────────────────────────────
+var loginOtpPhone = '';
+function sendLoginOTP() {
+  var phone = document.getElementById('loginPhone').value.trim();
+  var err   = document.getElementById('pErr1');
+  if (!phone || phone.length!==10 || !/^[6-9]/.test(phone)) {
+    err.textContent='Enter a valid 10-digit Indian mobile number.'; return;
+  }
+  err.textContent='';
+  var btn = document.getElementById('sendOtpBtn');
+  btn.textContent='Sending…'; btn.disabled=true;
+  loginOtpPhone = phone;
+  fetch('https://msg91-proxy.doctorramesh5.workers.dev/?action=send&phone='+phone)
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      btn.textContent='Resend OTP'; btn.disabled=false;
+      if(d.success){ document.getElementById('phoneDisp').textContent='+91 '+phone; showPStep(2); startTimer(); }
+      else err.textContent='Failed to send OTP.';
+    })
+    .catch(function(){ btn.textContent='Send OTP →'; btn.disabled=false; err.textContent='Network error.'; });
+}
+function verifyLoginOTP() {
+  var digits = Array.from(document.querySelectorAll('.lotp')).map(function(i){return i.value;}).join('');
+  var err    = document.getElementById('pErr2');
+  if(digits.length!==6){ err.textContent='Enter all 6 digits.'; return; }
+  var btn = document.querySelector('#pStep2 .btn');
+  btn.textContent='Verifying…'; btn.disabled=true;
+  fetch('https://msg91-proxy.doctorramesh5.workers.dev/?action=verify&phone='+loginOtpPhone+'&otp='+digits)
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      btn.textContent='Verify & Sign In →'; btn.disabled=false;
+      if(d.success){
+        localStorage.setItem('paype_phone',        loginOtpPhone);
+        localStorage.setItem('paype_login_method', 'phone');
+        var fakeUser = { displayName:'+91 '+loginOtpPhone, email:null, phoneNumber:'+91'+loginOtpPhone, uid:null };
+        checkAndRoute(fakeUser, loginOtpPhone);
+      } else {
+        err.textContent = d.message==='OTP expired or not found' ? 'OTP expired. Resend.' : 'Wrong OTP.';
+      }
+    })
+    .catch(function(){ btn.textContent='Verify & Sign In →'; btn.disabled=false; err.textContent='Network error.'; });
+}
+function resendLoginOTP(){
+  document.querySelectorAll('.lotp').forEach(function(i){i.value='';});
+  document.getElementById('pErr2').textContent='';
+  showPStep(1); setTimeout(sendLoginOTP,300);
+}
+var otpTimer=null;
+function startTimer(){
+  var s=30, btn=document.getElementById('rsndBtn'), timer=document.getElementById('rsndTimer');
+  btn.style.pointerEvents='none'; btn.style.opacity='.4';
+  clearInterval(otpTimer);
+  otpTimer=setInterval(function(){
+    timer.textContent='('+s+'s)'; s--;
+    if(s<0){clearInterval(otpTimer);btn.style.pointerEvents='auto';btn.style.opacity='1';timer.textContent='';}
+  },1000);
+}
+function otpNav(el,idx){ if(el.value&&idx<5) document.querySelectorAll('.lotp')[idx+1].focus(); }
+
+// ── REGISTER ─────────────────────────────────────────
+var regPhone='';
+function regNext(){
+  var name=document.getElementById('regName').value.trim();
+  var email=document.getElementById('regEmail').value.trim();
+  var phone=document.getElementById('regPhone').value.trim();
+  var pass=document.getElementById('regPass').value;
+  var err=document.getElementById('regErr1');
+  if(!name){err.textContent='Enter your full name.';return;}
+  if(!email||!email.includes('@')){err.textContent='Enter a valid email.';return;}
+  if(!phone||phone.length!==10||!/^[6-9]/.test(phone)){err.textContent='Enter a valid 10-digit mobile number.';return;}
+  if(pass.length<8){err.textContent='Password must be at least 8 characters.';return;}
+  err.textContent='';
+  regPhone=phone;
+  document.getElementById('regPhoneDisp').textContent='+91 '+phone;
+  showRStep(2);
+}
+function sendRegOTP(){
+  var err=document.getElementById('regErr2');
+  var btn=document.getElementById('sendRegOtpBtn');
+  btn.textContent='Sending…'; btn.disabled=true;
+  err.style.color='var(--muted)'; err.textContent='Sending OTP to +91 '+regPhone+'…';
+  window._regPhone=regPhone;
+  fetch('https://msg91-proxy.doctorramesh5.workers.dev/?action=send&phone='+regPhone)
+    .then(function(r){return r.json();})
+    .then(function(d){
+      btn.textContent='Resend OTP'; btn.disabled=false;
+      if(d.success){
+        document.getElementById('regOtpBox').style.display='block';
+        err.style.color='var(--green)'; err.textContent='✓ OTP sent!';
+      } else { err.style.color='var(--red)'; err.textContent='Failed. Try again.'; }
+    })
+    .catch(function(){ btn.textContent='Resend OTP'; btn.disabled=false; err.style.color='var(--red)'; err.textContent='Network error.'; });
+}
+function createAccount(){
+  var digits=Array.from(document.querySelectorAll('.rotp')).map(function(i){return i.value;}).join('');
+  var err=document.getElementById('regErr2');
+  var phone=window._regPhone;
+  if(digits.length!==6){err.style.color='var(--red)';err.textContent='Enter the 6-digit OTP.';return;}
+  if(!phone){err.style.color='var(--red)';err.textContent='Send OTP first.';return;}
+  var btn=document.getElementById('createAccBtn');
+  btn.textContent='Verifying…'; btn.disabled=true;
+  fetch('https://msg91-proxy.doctorramesh5.workers.dev/?action=verify&phone='+phone+'&otp='+digits)
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.success){
+        var name=document.getElementById('regName').value.trim();
+        var email=document.getElementById('regEmail').value.trim();
+        var pass=document.getElementById('regPass').value;
+        auth.createUserWithEmailAndPassword(email,pass)
+          .then(function(r){ return r.user.updateProfile({displayName:name}).then(function(){return r;}); })
+          .then(function(r){
+            if(db) db.collection('paype_users').doc(r.user.uid).set({
+              uid:r.user.uid, name:name, email:email, phone:phone,
+              plan:'none', planName:'None', credits:0, paid:false,
+              status:'active', createdAt:new Date().toISOString(), lastLogin:new Date().toISOString()
+            }).catch(function(){});
+            localStorage.setItem('paype_user_name',name);
+            localStorage.setItem('paype_user_email',email);
+            err.style.color='var(--green)'; err.textContent='✓ Account created!';
+            showRStep(3);
+            setTimeout(function(){ showPlanScreen(r.user); }, 1500);
+          })
+          .catch(function(e){
+            btn.textContent='Create Account →'; btn.disabled=false;
+            err.style.color='var(--red)';
+            err.textContent=e.code==='auth/email-already-in-use'?'Email already registered. Sign in instead.':'Error: '+e.message;
+          });
+      } else {
+        btn.textContent='Create Account →'; btn.disabled=false;
+        err.style.color='var(--red)';
+        err.textContent=d.message==='OTP expired or not found'?'OTP expired. Resend.':'Wrong OTP.';
+      }
+    })
+    .catch(function(){ btn.textContent='Create Account →'; btn.disabled=false; err.style.color='var(--red)'; err.textContent='Network error.'; });
+}
+function otpNav2(el,idx){ if(el.value&&idx<5) document.querySelectorAll('.rotp')[idx+1].focus(); }
+
+// ── PLAN SCREEN ───────────────────────────────────────
+function showPlanScreen(user) {
+  document.querySelector('.card').style.display='none';
+  document.querySelector('.theme-bar').style.display='none';
+  document.getElementById('planScreen').style.display='block';
+  var name=(user&&(user.displayName||user.email||user.phoneNumber))||'Welcome!';
+  var email=(user&&(user.email||user.phoneNumber))||'';
+  document.getElementById('planUserName').textContent=name;
+  document.getElementById('planUserEmail').textContent=email;
+}
+function selectPlan(plan){
+  var btn=document.getElementById('planContinueBtn');
+  if(btn){btn.disabled=false;btn.style.opacity='1';}
+  selectedPlan=plan;
+  document.querySelectorAll('.plan-card').forEach(function(c){c.classList.remove('selected');});
+  document.getElementById('planCard_'+plan).classList.add('selected');
+  document.getElementById('planContinueBtn').disabled=false;
+}
+function continueToDashboard(){
+  if(!selectedPlan) return;
+  var prices={starter:'799',pro:'2999',enterprise:'8999'};
+  localStorage.setItem('paype_plan',selectedPlan);
+  localStorage.setItem('paype_plan_price',prices[selectedPlan]);
+  // Show payment screen
+  document.getElementById('planScreen').style.display='none';
+  document.getElementById('paymentScreen').style.display='block';
+  var names={starter:'Starter',pro:'Pro',enterprise:'Enterprise'};
+  document.getElementById('ppsPlanName').textContent=names[selectedPlan]+' Plan';
+  document.getElementById('ppsPlanPrice').textContent=prices[selectedPlan];
+  document.getElementById('payBtnAmount').textContent=prices[selectedPlan];
+}
+function showPayBack(){
+  document.getElementById('paymentScreen').style.display='none';
+  document.getElementById('planScreen').style.display='block';
+}
+
+// ── PAYMENT ───────────────────────────────────────────
+var payMethod='card';
+function selectPayMethod(el,method){
+  payMethod=method;
+  document.querySelectorAll('.pm').forEach(function(p){p.classList.remove('active');});
+  el.classList.add('active');
+  document.getElementById('cardFields').style.display=method==='card'?'block':'none';
+  document.getElementById('upiFields').style.display=method==='upi'?'block':'none';
+  document.getElementById('netbankingFields').style.display=method==='netbanking'?'block':'none';
+}
+function formatCard(el){ var v=el.value.replace(/\D/g,'').substring(0,16); el.value=v.replace(/(\d{4})/g,'$1 ').trim(); }
+function formatExpiry(el){ var v=el.value.replace(/\D/g,''); if(v.length>=2) v=v.substring(0,2)+'/'+v.substring(2,4); el.value=v; }
+function setUPI(app){ var p={gpay:'name@oksbi',phonepe:'9999@ybl',paytm:'9999@paytm',other:'yourname@upi'}; document.getElementById('upiId').placeholder=p[app]||'yourname@upi'; }
+function processPayment(){ openRazorpay(); }
+function openRazorpay(){
+  var plan=localStorage.getItem('paype_plan')||'starter';
+  var price=localStorage.getItem('paype_plan_price')||'799';
+  var names={starter:'Starter',pro:'Pro',enterprise:'Enterprise'};
+  var options={
+    key:'rzp_live_Si0jGc1i23NVWo',
+    amount:parseInt(price)*100,
+    currency:'INR',
+    name:'PayPe Technologies',
+    description:names[plan]+' Plan - Monthly Subscription',
+    prefill:{
+      name:localStorage.getItem('paype_user_name')||'',
+      email:localStorage.getItem('paype_user_email')||'',
+      contact:localStorage.getItem('paype_phone')?'91'+localStorage.getItem('paype_phone'):''
+    },
+    theme:{color:'#f59e0b'},
+    handler:function(response){
+      localStorage.setItem('paype_payment_id',response.razorpay_payment_id);
+      localStorage.setItem('paype_paid','true');
+      savePaymentToFirestore(response.razorpay_payment_id,plan,price);
+      paymentSuccess();
+    },
+    modal:{ondismiss:function(){ document.getElementById('payErr').textContent='Payment cancelled.'; }}
+  };
+  var rzp=new Razorpay(options);
+  rzp.on('payment.failed',function(r){ document.getElementById('payErr').textContent='Payment failed: '+r.error.description; });
+  rzp.open();
+}
+function savePaymentToFirestore(paymentId,planKey,amount){
+  var planCredits={starter:100,pro:500,enterprise:2000};
+  var planNames={starter:'Starter',pro:'Pro',enterprise:'Enterprise'};
+  var credits=planCredits[planKey]||100;
+  localStorage.setItem('paype_credits',String(credits));
+  if(!db) return;
+  var user=auth?auth.currentUser:null;
+  var phone=localStorage.getItem('paype_phone')||'';
+  var rec={
+    uid:user?user.uid:'phone_'+phone,
+    name:localStorage.getItem('paype_user_name')||'',
+    email:localStorage.getItem('paype_user_email')||'',
+    phone:phone, paymentId:paymentId,
+    plan:planKey, planName:planNames[planKey],
+    amount:parseInt(amount), currency:'INR',
+    status:'paid', credits:credits, paidAt:new Date().toISOString()
+  };
+  db.collection('paype_payments').add(rec).catch(function(){});
+
+  // Send invoice email
+  var emailData = {
+    type: 'invoice',
+    to: rec.email || localStorage.getItem('paype_user_email') || '',
+    name: rec.name || localStorage.getItem('paype_user_name') || 'Customer',
+    plan: planKey,
+    amount: amount,
+    paymentId: paymentId,
+    credits: credits,
+    phone: rec.phone || localStorage.getItem('paype_phone') || '',
+    date: new Date().toLocaleDateString('en-IN', {day:'2-digit',month:'long',year:'numeric'})
+  };
+
+  if(emailData.to) {
+    fetch('https://paype-email.doctorramesh5.workers.dev', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(emailData)
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){ console.log('Invoice email:', d.success ? '✅ Sent' : '❌ Failed - ' + d.error); })
+    .catch(function(e){ console.log('Invoice email error:', e.message); });
+  }
+  var update={plan:planKey,planName:planNames[planKey],paid:true,credits:credits,paymentId:paymentId,amount:parseInt(amount),paidAt:new Date().toISOString(),status:'active'};
+  if(user&&user.uid){
+    db.collection('paype_users').doc(user.uid).set(update,{merge:true}).catch(function(){});
+  } else if(phone){
+    db.collection('paype_users').where('phone','==',phone).limit(1).get()
+      .then(function(snap){
+        if(!snap.empty) snap.docs[0].ref.set(update,{merge:true}).catch(function(){});
+        else db.collection('paype_users').add(Object.assign(update,{phone:phone,createdAt:new Date().toISOString()})).catch(function(){});
+      }).catch(function(){});
+  }
+}
+function paymentSuccess(){
+  document.getElementById('paymentScreen').innerHTML=
+    '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:40px">'+
+    '<div style="font-size:4rem;margin-bottom:20px">🎉</div>'+
+    '<h2 style="font-family:Playfair Display,serif;font-size:1.8rem;font-weight:900;margin-bottom:10px">Payment Successful!</h2>'+
+    '<p style="color:var(--muted);margin-bottom:24px">Welcome to PayPe Technologies.<br/>Taking you to your dashboard…</p>'+
+    '<div style="display:flex;align-items:center;gap:10px;color:var(--gold)">'+
+    '<div style="width:18px;height:18px;border:2px solid var(--gold);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></div>'+
+    'Redirecting…</div></div>';
+  setTimeout(function(){ window.location.href='/app'; },2500);
+}
+</script>
+
+<!-- ══ PLAN SELECTION SCREEN ══ -->
+<div id="planScreen" style="display:none;position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto;padding:40px 20px">
+  <div style="max-width:900px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:40px">
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:20px">
+        <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--red));display:flex;align-items:center;justify-content:center;color:#000;font-weight:900;font-size:1.1rem">P</div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900">PayPe <span style="color:var(--gold)">Technologies</span></div>
+      </div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;margin-bottom:8px">Choose Your <span style="background:linear-gradient(135deg,var(--gold),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent">Plan</span></h2>
+      <p style="color:var(--muted);font-size:.9rem">Select a plan to start building your app</p>
+    </div>
+
+    <div style="text-align:center;margin-bottom:28px;padding:14px 20px;background:var(--card);border:1px solid var(--border);border-radius:12px;max-width:400px;margin:0 auto 28px">
+      <div style="font-weight:700;font-size:.95rem" id="planUserName">Welcome!</div>
+      <div style="font-size:.77rem;color:var(--muted)" id="planUserEmail"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-bottom:32px">
+      <div class="plan-card" id="planCard_starter" onclick="selectPlan('starter')" style="background:var(--card);border:2px solid var(--border);border-radius:20px;padding:28px;cursor:pointer;transition:all .3s;text-align:center">
+        <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;margin-bottom:4px">Starter</div>
+        <div style="font-size:2.2rem;font-weight:900;color:var(--gold);margin:12px 0 4px;font-family:'Playfair Display',serif">₹799<span style="font-size:.85rem;color:var(--muted);font-weight:400;font-family:'DM Sans',sans-serif">/month</span></div>
+        <ul style="list-style:none;text-align:left;margin:12px 0 16px">
+          <li style="font-size:.82rem;padding:5px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)"><span style="color:var(--gold);font-weight:700">✓</span> 3 Apps</li>
+          <li style="font-size:.82rem;padding:5px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)"><span style="color:var(--gold);font-weight:700">✓</span> 100 Credits</li>
+          <li style="font-size:.82rem;padding:5px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)"><span style="color:var(--gold);font-weight:700">✓</span> 10,000 Monthly Users</li>
+          <li style="font-size:.82rem;padding:5px 0;display:flex;align-items:center;gap:8px"><span style="color:var(--gold);font-weight:700">✓</span> Email Support</li>
+        </ul>
+        <button style="width:100%;padding:12px;border-radius:11px;font-weight:700;font-size:.88rem;cursor:pointer;border:2px solid var(--border);background:transparent;color:var(--text);font-family:'DM Sans',sans-serif;transition:all .2s">Choose Starter</button>
+      </div>
+
+      <div class="plan-card" id="planCard_pro" onclick="selectPlan('pro')" style="background:var(--card);border:2px solid rgba(245,158,11,.4);border-radius:20px;padding:28px;cursor:pointer;transition:all .3s;text-align:center;position:relative">
+        <div style="position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),var(--red));color:#000;font-size:.7rem;font-weight:800;padding:4px 14px;border-radius:100px;white-space:nowrap">⚡ Most Popular</div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;margin-bottom:4px">Pro</div>
+        <div style="font-size:2.2rem;font-weight:900;color:var(--gold);margin:12px 0 4px;font-family:'Playfair Display',serif">₹2,999<span style="font-size:.85rem;color:var(--muted);font-weight:400;font-family:'DM Sans',sans-serif">/month</span></div>
+        <ul style="list-style:none;text-align:left;margin:12px 0 16px">
+          <li style="font-size:.82rem;padding:5px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)"><span style="color:var(--gold);font-weight:700">✓</span> 10 Apps</li>
+          <li style="font-size:.82rem;padding:5px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)"><span style="color:var(--gold);font-weight:700">✓</span> 500 Credits</li>
+          <li style="font-size:.82rem;padding:5px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)"><span style="color:var(--gold);font-weight:700">✓</span> 1,00,000 Monthly Users</li>
+          <li style="font-size:.82rem;padding:5px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)"><span style="color:var(--gold);font-weight:700">✓</span> Priority Support</li>
+          <li style="font-size:.82rem;padding:5px 0;display:flex;align-items:center;gap:8px"><span style="color:var(--gold);font-weight:700">✓</span> Payment Gateway</li>
+        </ul>
+        <button style="width:100%;padding:12px;border-radius:11px;font-weight:700;font-size:.88rem;cursor:pointer;border:none;background:linear-gradient(135deg,var(--gold),var(--red));color:#000;font-family:'DM Sans',sans-serif">Choose Pro</button>
+      </div>
+
+      <div class="plan-card" id="planCard_enterprise" onclick="selectPlan('enterprise')" style="background:var(--card);border:2px solid var(--border);border-radius:20px;padding:28px;cursor:pointer;transition:all .3s;text-align:center">
+        <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;margin-bottom:4px">Enterprise</div>
+        <div style="font-size:2.2rem;font-weight:900;color:var(--gold);margin:12px 0 4px;font-family:'Playfair Display',serif">₹8,999<span style="font-size:.85rem;color:var(--muted);font-weight:400;font-family:'DM Sans',sans-serif">/month</span></div>
+        <ul style="list-style:none;text-align:left;margin:12px 0 16px">
+          <li style="font-size:.82rem;padding:5px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)"><span style="color:var(--gold);font-weight:700">✓</span> Unlimited Apps</li>
+          <li style="font-size:.82rem;padding:5px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)"><span style="color:var(--gold);font-weight:700">✓</span> 2,000 Credits</li>
+          <li style="font-size:.82rem;padding:5px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)"><span style="color:var(--gold);font-weight:700">✓</span> Unlimited Users</li>
+          <li style="font-size:.82rem;padding:5px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)"><span style="color:var(--gold);font-weight:700">✓</span> 24/7 Support</li>
+          <li style="font-size:.82rem;padding:5px 0;display:flex;align-items:center;gap:8px"><span style="color:var(--gold);font-weight:700">✓</span> White Label</li>
+        </ul>
+        <button style="width:100%;padding:12px;border-radius:11px;font-weight:700;font-size:.88rem;cursor:pointer;border:2px solid var(--border);background:transparent;color:var(--text);font-family:'DM Sans',sans-serif">Choose Enterprise</button>
+      </div>
+    </div>
+
+    <div style="text-align:center">
+      <button id="planContinueBtn" onclick="continueToDashboard()" disabled style="width:100%;max-width:400px;padding:14px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--red));color:#000;font-weight:700;font-size:1rem;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.4">Continue to Payment →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAYMENT SCREEN ══ -->
+<div id="paymentScreen" style="display:none;position:fixed;inset:0;z-index:300;background:var(--bg);overflow-y:auto;padding:40px 20px">
+  <div style="max-width:480px;margin:0 auto">
+    <button onclick="showPayBack()" style="display:flex;align-items:center;gap:6px;color:var(--muted);font-size:.82rem;cursor:pointer;margin-bottom:24px;background:none;border:none;font-family:'DM Sans',sans-serif">← Back to Plans</button>
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-size:2rem;margin-bottom:10px">💳</div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;margin-bottom:6px">Complete Payment</h2>
+      <p style="color:var(--muted);font-size:.85rem">You're one step away from building your app!</p>
+    </div>
+    <div style="background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(239,68,68,.06));border:1px solid rgba(245,158,11,.2);border-radius:16px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:var(--gold)" id="ppsPlanName">Starter Plan</div>
+        <div style="font-size:.8rem;color:var(--muted)">Monthly subscription</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;color:var(--gold)">₹<span id="ppsPlanPrice">799</span></div>
+        <div style="font-size:.75rem;color:var(--muted)">/month</div>
+      </div>
+    </div>
+    <div style="text-align:center;color:var(--muted);font-size:.73rem;margin-bottom:16px">🔒 256-bit SSL encrypted · Powered by Razorpay</div>
+    <div class="err red" id="payErr" style="text-align:center;margin-bottom:8px"></div>
+    <button onclick="openRazorpay()" style="width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--red));color:#000;font-weight:800;font-size:1rem;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px">🔒 Pay ₹<span id="payBtnAmount">799</span> Securely</button>
+    <div style="text-align:center;margin-top:12px;font-size:.75rem;color:var(--muted)">🎉 7-day free trial · No charge today · Cancel anytime</div>
+  </div>
+</div>
+</body>
+</html>

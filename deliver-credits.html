@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Deliver Pending Credits – Admin Tool</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:#08080f;color:#e2e2f0;min-height:100vh;padding:24px}
+.wrap{max-width:600px;margin:0 auto}
+h1{color:#f59e0b;font-size:1.4rem;margin-bottom:6px}
+.sub{color:#6b6b8a;font-size:.85rem;margin-bottom:24px}
+.warn{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:14px 16px;margin-bottom:20px;font-size:.82rem;color:#fca5a5}
+.box{background:#0f0f1a;border:1px solid #1e1e30;border-radius:16px;padding:24px;margin-bottom:16px}
+.box h3{font-size:.95rem;margin-bottom:14px}
+label{display:block;font-size:.7rem;color:#6b6b8a;font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;margin-top:12px}
+label:first-child{margin-top:0}
+input,select{width:100%;background:#14141f;border:1px solid #1e1e30;border-radius:9px;padding:10px 14px;color:#e2e2f0;font-size:.88rem;outline:none}
+input:focus,select:focus{border-color:rgba(245,158,11,.5)}
+button{width:100%;padding:13px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#000;font-weight:700;font-size:.92rem;border:none;cursor:pointer;margin-top:18px}
+button:disabled{opacity:.5;cursor:not-allowed}
+.msg{padding:12px 16px;border-radius:9px;margin-top:14px;font-size:.85rem;display:none}
+.msg.show{display:block}
+.success{background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.25)}
+.error{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.25)}
+.info{background:rgba(56,189,248,.1);color:#38bdf8;border:1px solid rgba(56,189,248,.25)}
+.found-card{background:#14141f;border:1px solid #1e1e30;border-radius:10px;padding:14px;margin-top:12px;font-size:.82rem;line-height:1.8;display:none}
+.found-card.show{display:block}
+.found-card .row{display:flex;justify-content:space-between}
+.found-card .row span:first-child{color:#6b6b8a}
+.search-btn{background:#14141f;border:1px solid #1e1e30;color:#e2e2f0}
+</style>
+</head>
+<body>
+<div id="loginScreen" style="display:flex;align-items:center;justify-content:center;min-height:100vh">
+  <div style="max-width:380px;width:100%;background:#0f0f1a;border:1px solid #1e1e30;border-radius:16px;padding:32px;text-align:center">
+    <div style="font-size:2rem;margin-bottom:10px">🔐</div>
+    <h2 style="color:#f59e0b;font-size:1.2rem;margin-bottom:6px">Admin Login Required</h2>
+    <p style="color:#6b6b8a;font-size:.82rem;margin-bottom:20px">Sign in with your admin account to deliver credits</p>
+    <label style="text-align:left">Admin Email</label>
+    <input type="email" id="adminLoginEmail" placeholder="admin@paype.co.in"/>
+    <label style="text-align:left">Password</label>
+    <input type="password" id="adminLoginPass" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()"/>
+    <button onclick="adminLogin()" style="margin-top:18px">Sign In</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<div id="mainContent" style="display:none">
+
+<div class="wrap">
+  <h1>💎 Deliver Pending Credits</h1>
+  <p class="sub">For customers who paid via Razorpay but credits weren't added automatically</p>
+
+  <div class="warn">⚠️ Only use this for customers who have genuinely paid. Verify their Razorpay payment ID in your Razorpay Dashboard first.</div>
+
+  <div class="box">
+    <h3>🔍 Step 1 — Find Customer</h3>
+    <label>Search by Email</label>
+    <input type="email" id="searchEmail" placeholder="customer@email.com"/>
+    <button class="search-btn" onclick="searchCustomer()" style="background:#14141f;border:1px solid #1e1e30;color:#e2e2f0">Search Customer</button>
+
+    <div class="found-card" id="foundCard">
+      <div class="row"><span>Name:</span><span id="foundName">—</span></div>
+      <div class="row"><span>Email:</span><span id="foundEmail">—</span></div>
+      <div class="row"><span>UID:</span><span id="foundUid" style="font-size:.7rem">—</span></div>
+      <div class="row"><span>Current Credits:</span><span id="foundCredits" style="color:#f59e0b">—</span></div>
+      <div class="row"><span>Current Plan:</span><span id="foundPlan">—</span></div>
+      <div class="row"><span>Paid Status:</span><span id="foundPaid">—</span></div>
+    </div>
+    <div class="msg" id="searchMsg"></div>
+  </div>
+
+  <div class="box" id="deliverBox" style="display:none">
+    <h3>💳 Step 2 — Verify & Deliver Credits</h3>
+    <label>Razorpay Payment ID (from Razorpay Dashboard)</label>
+    <input type="text" id="paymentId" placeholder="pay_XXXXXXXXXXXXXX"/>
+
+    <label>Plan Purchased</label>
+    <select id="planSelect">
+      <option value="starter">Starter — ₹799 → 100 credits</option>
+      <option value="pro">Pro — ₹2,999 → 500 credits</option>
+      <option value="enterprise">Enterprise — ₹8,999 → 2000 credits</option>
+    </select>
+
+    <label>Amount Paid (₹)</label>
+    <input type="number" id="amountPaid" placeholder="799"/>
+
+    <label>Credits to Add</label>
+    <input type="number" id="creditsToAdd" value="100"/>
+
+    <button onclick="deliverCredits()" id="deliverBtn">✅ Deliver Credits Now</button>
+    <div class="msg" id="deliverMsg"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/firebase@9.22.2/firebase-app-compat.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@9.22.2/firebase-auth-compat.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@9.22.2/firebase-firestore-compat.min.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyAQ1Cchvt21GIVJIYHXBjBX7nI52tT6Zdc",
+  authDomain: "paype-technologies.firebaseapp.com",
+  projectId: "paype-technologies",
+  storageBucket: "paype-technologies.appspot.com",
+  messagingSenderId: "4797605407",
+  appId: "1:4797605407:web:9f4fd2564939bacc8e172a"
+});
+var db = firebase.firestore();
+var auth = firebase.auth();
+var currentDoc = null;
+var ADMIN_EMAILS = ['admin@paype.co.in'];
+
+function adminLogin(){
+  var email = document.getElementById('adminLoginEmail').value.trim();
+  var pass = document.getElementById('adminLoginPass').value;
+  var msg = document.getElementById('loginMsg');
+  if(!email || !pass){ msg.className='msg show error'; msg.textContent='Enter email and password.'; return; }
+  if(!ADMIN_EMAILS.includes(email)){ msg.className='msg show error'; msg.textContent='Access denied. Not an admin account.'; return; }
+  msg.className='msg show info'; msg.textContent='Signing in…';
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(function(result){
+      if(!ADMIN_EMAILS.includes(result.user.email)){
+        auth.signOut();
+        msg.className='msg show error'; msg.textContent='Access denied.';
+        return;
+      }
+      document.getElementById('loginScreen').style.display='none';
+      document.getElementById('mainContent').style.display='block';
+    })
+    .catch(function(e){
+      msg.className='msg show error';
+      msg.textContent = e.code==='auth/wrong-password' ? 'Incorrect password.' : 'Login failed: '+e.message;
+    });
+}
+
+auth.onAuthStateChanged(function(user){
+  if(user && ADMIN_EMAILS.includes(user.email)){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('mainContent').style.display='block';
+  }
+});
+
+var planCredits = {starter:100, pro:500, enterprise:2000};
+var planPrices = {starter:799, pro:2999, enterprise:8999};
+var planNames = {starter:'Starter', pro:'Pro', enterprise:'Enterprise'};
+
+document.getElementById('planSelect').addEventListener('change', function(){
+  document.getElementById('creditsToAdd').value = planCredits[this.value];
+  document.getElementById('amountPaid').value = planPrices[this.value];
+});
+
+function searchCustomer(){
+  var email = document.getElementById('searchEmail').value.trim();
+  var msg = document.getElementById('searchMsg');
+  var card = document.getElementById('foundCard');
+  var deliverBox = document.getElementById('deliverBox');
+
+  if(!email){ msg.className='msg show error'; msg.textContent='Enter an email to search.'; return; }
+
+  msg.className='msg show info'; msg.textContent='Searching…';
+  card.classList.remove('show');
+  deliverBox.style.display='none';
+
+  db.collection('paype_users').where('email','==',email).get()
+    .then(function(snap){
+      if(snap.empty){
+        msg.className='msg show error';
+        msg.textContent='❌ No customer found with this email. Check Firebase Authentication → Users to confirm they have an account, then create the Firestore record first via fix-customer.html approach.';
+        return;
+      }
+      currentDoc = snap.docs[0];
+      var d = currentDoc.data();
+      document.getElementById('foundName').textContent = d.name || '—';
+      document.getElementById('foundEmail').textContent = d.email || '—';
+      document.getElementById('foundUid').textContent = currentDoc.id;
+      document.getElementById('foundCredits').textContent = (d.credits||0) + ' credits';
+      document.getElementById('foundPlan').textContent = d.planName || d.plan || '—';
+      document.getElementById('foundPaid').textContent = d.paid ? '✅ Paid' : '⏳ Pending';
+      card.classList.add('show');
+      deliverBox.style.display='block';
+      msg.className='msg show success';
+      msg.textContent='✅ Customer found! Fill in payment details below.';
+    })
+    .catch(function(e){
+      msg.className='msg show error';
+      msg.textContent='Error: ' + e.message;
+    });
+}
+
+function deliverCredits(){
+  if(!currentDoc){ alert('Search for a customer first.'); return; }
+
+  var paymentId = document.getElementById('paymentId').value.trim();
+  var plan = document.getElementById('planSelect').value;
+  var amount = parseInt(document.getElementById('amountPaid').value) || planPrices[plan];
+  var credits = parseInt(document.getElementById('creditsToAdd').value) || planCredits[plan];
+  var msg = document.getElementById('deliverMsg');
+  var btn = document.getElementById('deliverBtn');
+
+  if(!paymentId){ msg.className='msg show error'; msg.textContent='Enter the Razorpay Payment ID for verification record.'; return; }
+
+  btn.disabled = true; btn.textContent='Processing…';
+  msg.className='msg show info'; msg.textContent='Delivering credits…';
+
+  var d = currentDoc.data();
+
+  // 1. Update user record with credits (increment, in case some were already there)
+  currentDoc.ref.set({
+    plan: plan,
+    planName: planNames[plan],
+    paid: true,
+    credits: firebase.firestore.FieldValue.increment(credits),
+    paymentId: paymentId,
+    amount: amount,
+    paidAt: new Date().toISOString()
+  }, { merge: true })
+  .then(function(){
+    // 2. Create payment record for admin payments tab
+    return db.collection('paype_payments').add({
+      uid: currentDoc.id,
+      name: d.name || '',
+      email: d.email || '',
+      phone: d.phone || '',
+      paymentId: paymentId,
+      plan: plan,
+      planName: planNames[plan],
+      amount: amount,
+      currency: 'INR',
+      status: 'paid',
+      credits: credits,
+      paidAt: new Date().toISOString(),
+      manuallyDelivered: true
+    });
+  })
+  .then(function(){
+    btn.disabled = false; btn.textContent='✅ Delivered!';
+    msg.className='msg show success';
+    msg.textContent='✅ ' + credits + ' credits delivered to ' + d.email + '! They will see it next time they open their dashboard.';
+    setTimeout(function(){ btn.textContent='✅ Deliver Credits Now'; }, 3000);
+  })
+  .catch(function(e){
+    btn.disabled = false; btn.textContent='✅ Deliver Credits Now';
+    msg.className='msg show error';
+    msg.textContent='❌ Error: ' + e.message;
+  });
+}
+</script>
+</div>
+</body>
+</html>
