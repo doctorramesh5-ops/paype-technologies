@@ -431,7 +431,7 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:48px 5%
     <h1>Build Any App with<br/><span>AI in Seconds</span></h1>
     <p>PayPe Technologies is India's leading AI-powered app builder. Describe your app in plain English — our AI designs, codes, and deploys it for you. No developers needed.</p>
     <div class="hero-btns">
-      <button class="btn-primary" onclick="window.location.href='https://app.paype.co.in'">Start Building Free →</button>
+      <button class="btn-primary" onclick="window.location.href='https://app.paype.co.in/login'">Start Building Free →</button>
       <button class="btn-secondary" onclick="openAuth('login')">Sign In</button>
     </div>
     <div class="hero-stats">
@@ -642,7 +642,7 @@ function copyERPDemo(){navigator.clipboard.writeText('PAYPE-DEMO-2026').then(fun
           <li>Chat support</li>
           <li>Custom branding</li>
         </ul>
-        <button class="pricing-btn main" onclick="window.location.href='https://app.paype.co.in'">Start Pro Trial</button>
+        <button class="pricing-btn main" onclick="window.location.href='https://app.paype.co.in/login'">Start Pro Trial</button>
       </div>
       <div class="pricing-card">
         <h3>Enterprise</h3>
@@ -656,7 +656,7 @@ function copyERPDemo(){navigator.clipboard.writeText('PAYPE-DEMO-2026').then(fun
           <li>Dedicated account manager</li>
           <li>GST invoice</li>
         </ul>
-        <button class="pricing-btn outline" onclick="window.location.href='https://app.paype.co.in'">Contact Sales</button>
+        <button class="pricing-btn outline" onclick="window.location.href='https://app.paype.co.in/login'">Contact Sales</button>
       </div>
     </div>
   </div>
@@ -1082,7 +1082,7 @@ function doLogin(){
     .then(()=>{
       err.style.color='#22c55e';
       err.textContent='✓ Signed in! Redirecting…';
-      setTimeout(()=>{ window.location.href='https://app.paype.co.in'; }, 1000);
+      setTimeout(()=>{ window.location.href='https://app.paype.co.in/login'; }, 1000);
     })
     .catch(e=>{
       err.style.color='var(--red)';
@@ -1156,7 +1156,7 @@ function verifyOTP(){
       btn.disabled=false;
       err.style.color='#22c55e';
       err.textContent='✓ Verified! Signing in…';
-      setTimeout(function(){ window.location.href='https://app.paype.co.in'; }, 1200);
+      setTimeout(function(){ window.location.href='https://app.paype.co.in/login'; }, 1200);
     })
     .catch(function(error){
       btn.textContent='Verify & Sign In →';
@@ -1278,7 +1278,7 @@ function createAccount(){
         err.style.color='#22c55e';
         err.textContent='✓ OTP Verified!';
         showSignupStep(3);
-        setTimeout(function(){ window.location.href='https://app.paype.co.in'; }, 2500);
+        setTimeout(function(){ window.location.href='https://app.paype.co.in/login'; }, 2500);
       } else {
         err.style.color='#ef4444';
         err.textContent = data.message === 'OTP expired or not found'
@@ -1315,7 +1315,7 @@ function googleAuth(){
         }, {merge:true}).catch(function(){});
       }
       // Redirect to app
-      window.location.href = 'https://app.paype.co.in';
+      window.location.href = 'https://app.paype.co.in/login';
     })
     .catch(function(error){
       if(error.code === 'auth/popup-closed-by-user') return;
@@ -1667,7 +1667,7 @@ function doLogin(){
     .then(()=>{
       err.style.color='#22c55e';
       err.textContent='✓ Signed in! Redirecting…';
-      setTimeout(()=>{ window.location.href='https://app.paype.co.in'; }, 1000);
+      setTimeout(()=>{ window.location.href='https://app.paype.co.in/login'; }, 1000);
     })
     .catch(e=>{
       err.style.color='var(--red)';
@@ -1741,7 +1741,7 @@ function verifyOTP(){
       btn.disabled=false;
       err.style.color='#22c55e';
       err.textContent='✓ Verified! Signing in…';
-      setTimeout(function(){ window.location.href='https://app.paype.co.in'; }, 1200);
+      setTimeout(function(){ window.location.href='https://app.paype.co.in/login'; }, 1200);
     })
     .catch(function(error){
       btn.textContent='Verify & Sign In →';
@@ -1863,7 +1863,7 @@ function createAccount(){
         err.style.color='#22c55e';
         err.textContent='✓ OTP Verified!';
         showSignupStep(3);
-        setTimeout(function(){ window.location.href='https://app.paype.co.in'; }, 2500);
+        setTimeout(function(){ window.location.href='https://app.paype.co.in/login'; }, 2500);
       } else {
         err.style.color='#ef4444';
         err.textContent = data.message === 'OTP expired or not found'
@@ -1900,7 +1900,7 @@ function googleAuth(){
         }, {merge:true}).catch(function(){});
       }
       // Redirect to app
-      window.location.href = 'https://app.paype.co.in';
+      window.location.href = 'https://app.paype.co.in/login';
     })
     .catch(function(error){
       if(error.code === 'auth/popup-closed-by-user') return;
