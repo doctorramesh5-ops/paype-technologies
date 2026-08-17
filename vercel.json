@@ -60,6 +60,10 @@
       "dest": "/contact.html"
     },
     {
+      "src": "/refund",
+      "dest": "/refund.html"
+    },
+    {
       "src": "/deliver-credits",
       "dest": "/deliver-credits.html"
     }
