@@ -542,28 +542,25 @@ footer{background:var(--bg2);border-top:1px solid var(--border);}
 
 <script>
 var DEMOS={
-  erp:{title:'📊 PAYPE ERP — Live Demo',url:'https://erp.paype.co.in',email:'demo@paype.co.in',pass:'Demo@2026',features:['Accounting & Finance','Procurement & Purchase Orders','CEO Dashboard with Live Analytics','AI Assistant — Smart Automation','Vendor Management & Payments','GST Reports & Tax Filing']},
-  hrms:{title:'👥 PAYPE HRMS — Live Demo',url:'https://hr.paype.co.in',email:'demo@paype.co.in',pass:'Demo@2026',features:['Employee Profiles & Documents','Attendance & Leave Management','ATS — Recruitment Pipeline','Offer Letters & Onboarding','IT Asset Management','Interview Scheduling']},
-  social:{title:'📣 PAYPE Social Hub — Live Demo',url:'https://social.paype.co.in',email:'demo@paype.co.in',pass:'Demo@2026',features:['Bulk SMS & WhatsApp Marketing','Email / Gmail Campaigns','Meta (Facebook+Instagram) Ads','LinkedIn & YouTube Marketing','SEO/GEO/AEO/AIO Optimizer','AI Content Generator']},
-  pg:{title:'💳 PAYPE Pay Gateway — Live Demo',url:'https://pg.paype.co.in',email:'admin@paype.co.in',pass:'Admin@PayPe2026',features:['PhonePe Standard Checkout','UPI, Cards, Net Banking','Auto Reconciliation','Webhook & Refund Management','Merchant Dashboard','Real-time Transaction Reports']},
-  ai:{title:'🤖 PAYPE AI Builder — Live Demo',url:'https://app.paype.co.in',email:'demo@paype.co.in',pass:'Demo@2026',features:['Build AI Apps with AI','Dual AI Integration','No Coding Required','Custom App Generation','Preview & Download','Mobile App Available']},
-  bankme:{title:'🏦 BankMe — Live Demo',url:'https://bankme.co.in',email:'demo@paype.co.in',pass:'Demo@2026',features:['Business Banking Tools','Loan Management','Credit Score Monitoring','Financial Analytics','GST Filing Assistant','Investment Portfolio']}
+  erp:{title:'📊 PAYPE ERP — Live Demo',url:'https://erp.paype.co.in',features:['Accounting & Finance','Procurement & Purchase Orders','CEO Dashboard with Live Analytics','AI Assistant — Smart Automation','Vendor Management & Payments','GST Reports & Tax Filing']},
+  hrms:{title:'👥 PAYPE HRMS — Live Demo',url:'https://hr.paype.co.in',features:['Employee Profiles & Documents','Attendance & Leave Management','ATS — Recruitment Pipeline','Offer Letters & Onboarding','IT Asset Management','Interview Scheduling']},
+  social:{title:'📣 PAYPE Social Hub — Live Demo',url:'https://social.paype.co.in',features:['Bulk SMS & WhatsApp Marketing','Email / Gmail Campaigns','Meta (Facebook+Instagram) Ads','LinkedIn & YouTube Marketing','SEO/GEO/AEO/AIO Optimizer','AI Content Generator']},
+  pg:{title:'💳 PAYPE Pay Gateway — Live Demo',url:'https://pg.paype.co.in',features:['PhonePe Standard Checkout','UPI, Cards, Net Banking','Auto Reconciliation','Webhook & Refund Management','Merchant Dashboard','Real-time Transaction Reports']},
+  ai:{title:'🤖 PAYPE AI Builder — Live Demo',url:'https://app.paype.co.in',features:['Build AI Apps with AI','Dual AI Integration','No Coding Required','Custom App Generation','Preview & Download','Mobile App Available']},
+  bankme:{title:'🏦 BankMe — Live Demo',url:'https://bankme.co.in',features:['Business Banking Tools','Loan Management','Credit Score Monitoring','Financial Analytics','GST Filing Assistant','Investment Portfolio']}
 };
 
 function openDemo(prod){
   var d=DEMOS[prod];if(!d)return;
   document.getElementById('demoTitle').textContent=d.title;
   var h='<div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:20px;">';
-  h+='<div style="font-size:.75rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">🔑 Demo Login Credentials</div>';
-  h+='<div style="font-family:monospace;font-size:.85rem;line-height:2.2;color:var(--text);">';
-  h+='URL: <a href="'+d.url+'" target="_blank" style="color:var(--teal);">'+d.url+' ↗</a><br>';
-  h+='Email: <strong>'+d.email+'</strong><br>';
-  h+='Password: <strong>'+d.pass+'</strong></div></div>';
+  h+='<div style="font-size:.75rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">&#128274; Private demo</div>';
+  h+='<div style="font-size:.85rem;line-height:1.7;color:var(--text);">For your security we do not publish demo logins. Request a demo and our team will give you a personal, time-limited access.</div></div>';
   h+='<div style="font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:12px;">✅ Key Features</div>';
   h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;">';
   d.features.forEach(function(f){h+='<div style="display:flex;align-items:center;gap:7px;font-size:.78rem;color:var(--muted);"><span style="color:var(--green);font-size:.65rem;">✅</span>'+f+'</div>';});
   h+='</div>';
-  h+='<a href="'+d.url+'" target="_blank" style="display:block;padding:13px;background:var(--teal);color:var(--navy);border-radius:10px;font-size:.85rem;font-weight:800;text-align:center;text-decoration:none;">🚀 Open Live Demo →</a>';
+  h+='<a href="contact.html?demo='+encodeURIComponent(prod)+'" style="display:block;padding:13px;background:var(--teal);color:var(--navy);border-radius:10px;font-size:.85rem;font-weight:800;text-align:center;text-decoration:none;">Request a private demo &rarr;</a>';
   h+='<a href="https://signup.paype.co.in" target="_blank" style="display:block;padding:13px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:10px;font-size:.82rem;font-weight:600;text-align:center;text-decoration:none;margin-top:8px;">Start Free Trial →</a>';
   document.getElementById('demoBody').innerHTML=h;
   document.getElementById('demoModal').classList.add('active');
