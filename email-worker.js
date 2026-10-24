@@ -1,4 +1,4 @@
-// PayPe Email Worker
+// PAYPE Email Worker
 // Deploy as: paype-email.doctorramesh5.workers.dev
 // Uses Resend API (free 3000 emails/month)
 
@@ -53,7 +53,7 @@ export default {
       const gst = Math.round(parseInt(amount) * 0.18);
       const subtotal = parseInt(amount) - gst;
 
-      subject = `Invoice ${invoiceNum} - PayPe Technologies`;
+      subject = `Invoice ${invoiceNum} - PAYPE Technologies`;
       html = `
 <!DOCTYPE html>
 <html>
@@ -90,7 +90,7 @@ export default {
 <div class="wrap">
   <div class="header">
     <div class="logo">P</div>
-    <h1>PayPe Technologies</h1>
+    <h1>PAYPE Technologies</h1>
     <p>Tax Invoice / Receipt</p>
   </div>
 
@@ -121,7 +121,7 @@ export default {
     <div style="display:flex;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:16px">
       <div>
         <h4 style="margin:0 0 8px;font-size:11px;text-transform:uppercase;color:#999;letter-spacing:1px">From</h4>
-        <p style="margin:0;font-weight:700">PayPe Technologies Pvt. Ltd.</p>
+        <p style="margin:0;font-weight:700">PAYPE Technologies Pvt. Ltd.</p>
         <p style="margin:4px 0 0;font-size:13px;color:#777">277/1A, Annamalai Industrial Park<br/>Kalapatti, Coimbatore – 641048<br/>Tamil Nadu, India<br/>GST: 33AAMCP7960K1ZU<br/>itsupport@paype.co.in</p>
       </div>
       <div>
@@ -173,7 +173,7 @@ export default {
 
   <div class="footer">
     <p>
-      <strong>PayPe Technologies Private Limited</strong><br/>
+      <strong>PAYPE Technologies Private Limited</strong><br/>
       CIN: U74994TN2022PTC151114 · GST: 33AAMCP7960K1ZU<br/>
       <a href="https://paype.co.in">paype.co.in</a> · <a href="mailto:itsupport@paype.co.in">itsupport@paype.co.in</a><br/>
       This is a computer-generated invoice and does not require a signature.
@@ -193,7 +193,7 @@ export default {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          from: 'PayPe Technologies <invoice@paype.co.in>',
+          from: 'PAYPE Technologies <invoice@paype.co.in>',
           to: [to],
           subject: subject,
           html: html

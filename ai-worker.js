@@ -1,4 +1,4 @@
-// PayPe AI Builder Worker
+// PAYPE AI Builder Worker
 // Deploy this as a NEW Cloudflare Worker named: paype-ai
 
 export default {
